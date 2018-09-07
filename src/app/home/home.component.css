@@ -1,0 +1,37 @@
+.container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.home-image {
+    height: 300px;
+}
+
+.game-url-container {
+    border: solid 1px;
+    border-color: rgb(11, 22, 48);
+    background-color: rgb(33, 77, 160);
+    display: flex;
+    align-items: center;
+    padding: 10px;
+}
+
+.game-url-container input[type=text] {
+    margin-right: 10px;
+}
+
+.game-url-container * {
+    padding: 5px;
+}
+
+.game-url-container button:not([disabled]) {
+    font-weight: bold;
+}
+
+#url.ng-invalid.ng-touched {
+    border: solid red 2px;
+    background-color: lightpink;
+}

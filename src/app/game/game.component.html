@@ -1,0 +1,12 @@
+<div class="container">
+    <div class="errors-container">
+        <div class="error" *ngFor="let error of errors">
+            <p>{{error}}</p>
+        </div>
+    </div>
+
+    <button [routerLink]="['/home']">Spectate another game</button>
+
+    <canvas id="bomberman-game" width="480" height="480"></canvas>
+
+</div>

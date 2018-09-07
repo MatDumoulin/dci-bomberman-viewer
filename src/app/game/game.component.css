@@ -1,0 +1,29 @@
+.container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.errors-container {
+    display: flex;
+    flex-direction: column;
+    max-width: 1000px;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.error {
+    border: solid red 2px;
+    background-color: lightpink;
+    width: 100%;
+    border-radius: 5px;
+    text-align: center;
+}
+
+canvas {
+    margin-top: 20px;
+    background-color: black;
+    box-shadow: 1px 1px gray;
+}
