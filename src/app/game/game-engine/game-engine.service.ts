@@ -1,5 +1,5 @@
 import { Injectable, OnDestroy } from "@angular/core";
-import { promise } from "protractor";
+import { Point } from "../../models/point";
 
 @Injectable({
     providedIn: "root"
@@ -19,7 +19,6 @@ export class GameEngineService implements OnDestroy {
      */
     getImage(imageUrl: string): Promise<HTMLImageElement> {
         return new Promise((resolve, reject) => {
-
             // If the image is already in cache, resolve right away.
             if (this._imageCache.has(imageUrl)) {
                 resolve(this._imageCache.get(imageUrl));
@@ -35,9 +34,33 @@ export class GameEngineService implements OnDestroy {
                 resolve(image);
             };
 
-            image.onerror = () => {
-                reject();
+            image.onerror = (error) => {
+                reject(error);
             };
         });
+    }
+
+    drawSprite(
+        ctx: CanvasRenderingContext2D,
+        spritesheet: HTMLImageElement,
+        positionInGame: Point,
+        imageWidth: number,
+        imageHeight: number,
+        imageCol: number,
+        imageRow: number,
+        displayWidth: number,
+        displayHeight: number
+    ): void {
+        ctx.drawImage(
+            spritesheet, // The sprite sheet from which we take our image.
+            imageCol * imageWidth, // The x pixel that marks the beggining of our image in the sprite.
+            imageRow * imageHeight, // The y pixel that marks the beggining of our image in the sprite.
+            imageWidth, // The width of our image in the sprite.
+            imageHeight, // The height of our image in the sprite.
+            positionInGame._x, // Where (x pixel) to draw our image in the game.
+            positionInGame._y, // Where (y pixel) to draw our image in the game.
+            displayWidth, // The width of our image in the game.
+            displayHeight // The height of our image in the game.
+        );
     }
 }

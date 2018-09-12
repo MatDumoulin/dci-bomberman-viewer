@@ -18,7 +18,7 @@ export enum ObjectType {
 }
 
 /** Any object that can be displayed on the map has these properties. */
-export interface GameObject {
+export class GameObject {
     type: ObjectType;
     coordinates: Point;
     width: number;

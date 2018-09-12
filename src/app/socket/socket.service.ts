@@ -1,7 +1,7 @@
 import { Injectable, OnDestroy } from "@angular/core";
 import { connect } from "socket.io-client";
 import { BehaviorSubject } from "rxjs";
-import { GameState } from "../models/game-state";
+import { GameState, GameStateFromServer } from "../models/game-state";
 
 @Injectable({
     providedIn: "root"
@@ -29,6 +29,8 @@ export class SocketService implements OnDestroy {
                 this.errors.next(null);
                 this._isConnected = true;
                 resolve();
+                // Sending a request to the server in order to view the game.
+                this._socket.emit("viewGame");
             });
 
             this._socket.on("connect_error", () => {
@@ -36,10 +38,6 @@ export class SocketService implements OnDestroy {
                     "Unable to connect to server with url " + serverUrl;
                 console.log(errorMessage);
                 this.errors.next(errorMessage); // Adding the error to the end of the errors.
-            });
-
-            this._socket.on('StateChanged', (gameState: GameState) => {
-                console.log(gameState);
             });
 
             this._socket.on("disconnect", () => {
