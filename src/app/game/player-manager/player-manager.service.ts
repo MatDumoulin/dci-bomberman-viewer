@@ -17,10 +17,12 @@ export class PlayerManagerService {
                 .getImage(ImageLocation.player)
                 .then(playerSpritesheet => {
                     // First, we get the position of the action in our spritesheet.
+                    player.animate();
                     const spritePosition = {
-                        col: (player.animationFrame + 1) % 3,
+                        col: player.animationFrame % 3,
                         row: -1
                     };
+
                     // The player sprite contains 4 rows, each one describe an action.
                     if (player.currentActions.move_right) {
                         spritePosition.row = 0;
@@ -54,6 +56,8 @@ export class PlayerManagerService {
                         32,
                         32
                     );
+
+                    // TODO: Remove that console.log(player.coordinates);
                     resolve();
                 })
                 .catch((error) => {

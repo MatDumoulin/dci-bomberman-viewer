@@ -15,11 +15,14 @@ import { Player } from "../models/player";
     styleUrls: ["./game.component.css"]
 })
 export class GameComponent implements OnInit, OnDestroy {
+    private readonly TICKS_PER_REFRESH = 4; // Game is running at 15 FPS.
+    private _isListeningToSocket = false;
     private _subscriptions: Subscription[] = [];
     private _currentGameState: GameState;
-    private readonly TICKS_PER_REFRESH = 4; // Game is running at 15 FPS.
     private _currentTick = 0;
+    private _isViewingGame = false;
     errors: string[] = [];
+    hasJoinedGame = false;
 
     constructor(
         private _gameEngineService: GameEngineService,
@@ -55,30 +58,39 @@ export class GameComponent implements OnInit, OnDestroy {
     }
 
     onSocketConnectionSetUp(): void {
-        this._socketService.on("viewingGame", (gameState: GameStateFromServer) => {
-            console.log("We are now viewing the game.");
-            // Here we want to init the state of the game with the one given by the server.
-            const initializedPlayers = this.initPlayers(gameState);
+        if (!this._isListeningToSocket) {
+            this._isListeningToSocket = false;
+            this._socketService.on("viewingGame", (gameState: GameStateFromServer) => {
+                console.log("We are now viewing the game.");
+                // Here we want to init the state of the game with the one given by the server.
+                const initializedPlayers = this.initPlayers(gameState);
 
-            this._currentGameState = {
-                ...gameState,
-                players: initializedPlayers
-            };
+                this._currentGameState = {
+                    ...gameState,
+                    players: initializedPlayers
+                };
 
-            this._currentTick = 0;
-            this.drawLoop();
-        });
+                this._isViewingGame = true;
+                this._currentTick = 0;
+                this.drawLoop();
+            });
 
-        this._socketService.on("StateChanged", (gameState: GameStateFromServer) => {
-            // Here we want to update the current game state to match the new state.
-            // For some objects, we are storing useful information that we don't want to lose.
-            const updatedPlayers = this.updatePlayerActions(gameState);
+            this._socketService.on("StateChanged", (gameState: GameStateFromServer) => {
+                // Skip this if the player is not yet viewing the game.
+                if (!this._isViewingGame) {
+                    return;
+                }
 
-            this._currentGameState = {
-                ...gameState,
-                players: updatedPlayers
-            };
-        });
+                // Here we want to update the current game state to match the new state.
+                // For some objects, we are storing useful information that we don't want to lose.
+                const updatedPlayers = this.updatePlayerState(gameState);
+
+                this._currentGameState = {
+                    ...gameState,
+                    players: updatedPlayers
+                };
+            });
+        }
     }
 
     private drawLoop(): void {
@@ -116,16 +128,24 @@ export class GameComponent implements OnInit, OnDestroy {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
 
-    private updatePlayerActions(newState: GameStateFromServer): {[playerId: string]: Player} {
+    private updatePlayerState(newState: GameStateFromServer): {[playerId: string]: Player} {
         const players: {[playerId: string]: Player} = {};
         const playerIds = Object.keys(newState.players);
 
         for (const playerId of playerIds) {
             const playerFromCurrentState = this._currentGameState.players[playerId];
             const playerFromNewState = newState.players[playerId];
-            // Updating our player reference.
-            playerFromCurrentState.changeActions(playerFromNewState.actions);
-            players[playerId] = playerFromCurrentState;
+
+            if (playerFromCurrentState) {
+                // Updating our player reference.
+                playerFromCurrentState.changeState(playerFromNewState);
+                players[playerId] = playerFromCurrentState;
+            }
+            // If the player is not in our state, add him.
+            else {
+                const newPlayer = new Player(playerFromNewState);
+                players[playerId] = newPlayer;
+            }
         }
 
         return players;
@@ -143,6 +163,10 @@ export class GameComponent implements OnInit, OnDestroy {
         return players;
     }
 
+/*     private initGameState(gameState: GameStateFromServer): void {
+
+    } */
+
     private getCanvasContext(): CanvasRenderingContext2D {
         const canvas = this.getCanvas();
 
@@ -158,5 +182,27 @@ export class GameComponent implements OnInit, OnDestroy {
 
     private getCanvas(): HTMLCanvasElement {
         return document.getElementById("bomberman-game") as HTMLCanvasElement;
+    }
+
+
+
+    // To play the game
+    joinGame(): void {
+        this._socketService.emit("joinGame", "mathieu");
+        this._socketService.on('GameJoined', () => {
+            this.hasJoinedGame = true;
+
+        });
+    }
+
+    leaveGame(): void {
+        this._socketService.emit("leaveGame");
+        this.hasJoinedGame = false;
+    }
+
+    onKeyDown(event: KeyboardEvent): void {
+        if (this.hasJoinedGame) {
+            console.log(event);
+        }
     }
 }

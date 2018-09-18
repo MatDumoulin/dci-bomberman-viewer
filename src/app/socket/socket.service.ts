@@ -59,6 +59,10 @@ export class SocketService implements OnDestroy {
         this._socket.on(event, callback);
     }
 
+    emit(event: string, payload: any = null) {
+        this._socket.emit(event, payload);
+    }
+
     get isConnected(): boolean {
         return this._isConnected;
     }

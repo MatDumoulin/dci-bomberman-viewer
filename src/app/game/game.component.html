@@ -5,8 +5,14 @@
         </div>
     </div>
 
-    <button [routerLink]="['/home']">Spectate another game</button>
+    <div>
+        <div class="action-container">
+            <button [routerLink]="['/home']">Spectate another game</button>
+            <button *ngIf="!hasJoinedGame" (click)="joinGame()">Join Game</button>
+            <button *ngIf="hasJoinedGame" (click)="leaveGame()">Leave Game</button>
+        </div>
 
-    <canvas id="bomberman-game" width="480" height="480"></canvas>
+        <canvas id="bomberman-game" width="480" height="480" tabindex="0" (keydown)="onKeyDown($event)"></canvas>
+    </div>
 
 </div>
