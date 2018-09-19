@@ -7,7 +7,7 @@ import { GameEngineService } from "./game-engine/game-engine.service";
 import { GameMapManagerService } from "./game-map-manager/game-map-manager.service";
 import { GameState, GameStateFromServer } from "../models/game-state";
 import { PlayerManagerService } from "./player-manager/player-manager.service";
-import { Player } from "../models/player";
+import { Player, PlayerAction } from "../models/player";
 
 @Component({
     selector: "bomberman-game",
@@ -23,6 +23,7 @@ export class GameComponent implements OnInit, OnDestroy {
     private _isViewingGame = false;
     errors: string[] = [];
     hasJoinedGame = false;
+    private _previousActions: PlayerAction;
 
     constructor(
         private _gameEngineService: GameEngineService,
@@ -37,8 +38,7 @@ export class GameComponent implements OnInit, OnDestroy {
             this._socketService.errors.subscribe(errors => {
                 if (!errors) {
                     this.errors = [];
-                }
-                else if (!this.errors.includes(errors)) {
+                } else if (!this.errors.includes(errors)) {
                     this.errors.push(errors);
                 }
             })
@@ -46,7 +46,9 @@ export class GameComponent implements OnInit, OnDestroy {
 
         const serverUrl = this._route.snapshot.paramMap.get("serverUrl");
         console.log("Server url: ", serverUrl);
-        this._socketService.connect(serverUrl).then( () => this.onSocketConnectionSetUp());
+        this._socketService
+            .connect(serverUrl)
+            .then(() => this.onSocketConnectionSetUp());
     }
 
     ngOnDestroy(): void {
@@ -60,41 +62,46 @@ export class GameComponent implements OnInit, OnDestroy {
     onSocketConnectionSetUp(): void {
         if (!this._isListeningToSocket) {
             this._isListeningToSocket = false;
-            this._socketService.on("viewingGame", (gameState: GameStateFromServer) => {
-                console.log("We are now viewing the game.");
-                // Here we want to init the state of the game with the one given by the server.
-                const initializedPlayers = this.initPlayers(gameState);
+            this._socketService.on(
+                "viewingGame",
+                (gameState: GameStateFromServer) => {
+                    console.log("We are now viewing the game.");
+                    // Here we want to init the state of the game with the one given by the server.
+                    const initializedPlayers = this.initPlayers(gameState);
 
-                this._currentGameState = {
-                    ...gameState,
-                    players: initializedPlayers
-                };
+                    this._currentGameState = {
+                        ...gameState,
+                        players: initializedPlayers
+                    };
 
-                this._isViewingGame = true;
-                this._currentTick = 0;
-                this.drawLoop();
-            });
-
-            this._socketService.on("StateChanged", (gameState: GameStateFromServer) => {
-                // Skip this if the player is not yet viewing the game.
-                if (!this._isViewingGame) {
-                    return;
+                    this._isViewingGame = true;
+                    this._currentTick = 0;
+                    this.drawLoop();
                 }
+            );
 
-                // Here we want to update the current game state to match the new state.
-                // For some objects, we are storing useful information that we don't want to lose.
-                const updatedPlayers = this.updatePlayerState(gameState);
+            this._socketService.on(
+                "StateChanged",
+                (gameState: GameStateFromServer) => {
+                    // Skip this if the player is not yet viewing the game.
+                    if (!this._isViewingGame) {
+                        return;
+                    }
 
-                this._currentGameState = {
-                    ...gameState,
-                    players: updatedPlayers
-                };
-            });
+                    // Here we want to update the current game state to match the new state.
+                    // For some objects, we are storing useful information that we don't want to lose.
+                    const updatedPlayers = this.updatePlayerState(gameState);
+
+                    this._currentGameState = {
+                        ...gameState,
+                        players: updatedPlayers
+                    };
+                }
+            );
         }
     }
 
     private drawLoop(): void {
-
         window.requestAnimationFrame(this.drawLoop.bind(this));
         this._currentTick++;
 
@@ -128,12 +135,16 @@ export class GameComponent implements OnInit, OnDestroy {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
 
-    private updatePlayerState(newState: GameStateFromServer): {[playerId: string]: Player} {
-        const players: {[playerId: string]: Player} = {};
+    private updatePlayerState(
+        newState: GameStateFromServer
+    ): { [playerId: string]: Player } {
+        const players: { [playerId: string]: Player } = {};
         const playerIds = Object.keys(newState.players);
 
         for (const playerId of playerIds) {
-            const playerFromCurrentState = this._currentGameState.players[playerId];
+            const playerFromCurrentState = this._currentGameState.players[
+                playerId
+            ];
             const playerFromNewState = newState.players[playerId];
 
             if (playerFromCurrentState) {
@@ -151,8 +162,10 @@ export class GameComponent implements OnInit, OnDestroy {
         return players;
     }
 
-    private initPlayers(newState: GameStateFromServer): {[playerId: string]: Player} {
-        const players: {[playerId: string]: Player} = {};
+    private initPlayers(
+        newState: GameStateFromServer
+    ): { [playerId: string]: Player } {
+        const players: { [playerId: string]: Player } = {};
         const playerIds = Object.keys(newState.players);
 
         for (const playerId of playerIds) {
@@ -163,7 +176,7 @@ export class GameComponent implements OnInit, OnDestroy {
         return players;
     }
 
-/*     private initGameState(gameState: GameStateFromServer): void {
+    /*     private initGameState(gameState: GameStateFromServer): void {
 
     } */
 
@@ -177,21 +190,18 @@ export class GameComponent implements OnInit, OnDestroy {
             return null;
         }
 
-        return canvas.getContext('2d');
+        return canvas.getContext("2d");
     }
 
     private getCanvas(): HTMLCanvasElement {
         return document.getElementById("bomberman-game") as HTMLCanvasElement;
     }
 
-
-
     // To play the game
     joinGame(): void {
         this._socketService.emit("joinGame", "mathieu");
-        this._socketService.on('GameJoined', () => {
+        this._socketService.on("GameJoined", () => {
             this.hasJoinedGame = true;
-
         });
     }
 
@@ -202,7 +212,69 @@ export class GameComponent implements OnInit, OnDestroy {
 
     onKeyDown(event: KeyboardEvent): void {
         if (this.hasJoinedGame) {
-            console.log(event);
+
+            let actions: PlayerAction;
+
+            if (this._previousActions) {
+                actions = new PlayerAction();
+            }
+            else {
+                actions = Object.assign({}, this._previousActions);
+            }
+
+            if (event.key === "ArrowUp") {
+                actions.move_up = true;
+            } else if (event.key === "ArrowDown") {
+                actions.move_down = true;
+            } else if (event.key === "ArrowLeft") {
+                actions.move_left = true;
+            } else if (event.key === "ArrowRight") {
+                actions.move_right = true;
+            }
+
+            // Verify if actions have changed
+            const hasChanged =
+                !this._previousActions ||
+                this._previousActions.move_down !== actions.move_down ||
+                this._previousActions.move_up !== actions.move_up ||
+                this._previousActions.move_left !== actions.move_left ||
+                this._previousActions.move_right !== actions.move_right;
+
+            this._previousActions = actions;
+
+            if (hasChanged) {
+                this._socketService.emit("PlayerAction", {playerId: "mathieu", actions});
+            }
+        }
+    }
+
+    onKeyUp(event: KeyboardEvent): void {
+        if (this.hasJoinedGame) {
+            const actions = Object.assign({}, this._previousActions);
+
+            if (event.key === "ArrowUp") {
+                actions.move_up = false;
+            } else if (event.key === "ArrowDown") {
+                actions.move_down = false;
+            } else if (event.key === "ArrowLeft") {
+                actions.move_left = false;
+            } else if (event.key === "ArrowRight") {
+                actions.move_right = false;
+            }
+
+            // Verify if actions have changed
+            const hasChanged =
+                !this._previousActions ||
+                this._previousActions.move_down !== actions.move_down ||
+                this._previousActions.move_up !== actions.move_up ||
+                this._previousActions.move_left !== actions.move_left ||
+                this._previousActions.move_right !== actions.move_right;
+
+            this._previousActions = actions;
+
+            if (hasChanged) {
+                this._socketService.emit("PlayerAction", {playerId: "mathieu", actions});
+            }
         }
     }
 }

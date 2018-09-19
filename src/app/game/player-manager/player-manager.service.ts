@@ -57,7 +57,6 @@ export class PlayerManagerService {
                         32
                     );
 
-                    // TODO: Remove that console.log(player.coordinates);
                     resolve();
                 })
                 .catch((error) => {
