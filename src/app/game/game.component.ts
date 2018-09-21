@@ -3,7 +3,6 @@ import { ActivatedRoute } from "@angular/router";
 import { Subscription } from "rxjs";
 import { SocketService } from "../socket/socket.service";
 
-import { GameEngineService } from "./game-engine/game-engine.service";
 import { GameMapManagerService } from "./game-map-manager/game-map-manager.service";
 import { GameState, GameStateFromServer } from "../models/game-state";
 import { PlayerManagerService } from "./player-manager/player-manager.service";
@@ -26,7 +25,6 @@ export class GameComponent implements OnInit, OnDestroy {
     private _previousActions: PlayerAction;
 
     constructor(
-        private _gameEngineService: GameEngineService,
         private _gameMapManagerService: GameMapManagerService,
         private _playerManagerService: PlayerManagerService,
         private _route: ActivatedRoute,

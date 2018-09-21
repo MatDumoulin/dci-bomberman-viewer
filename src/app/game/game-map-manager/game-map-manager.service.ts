@@ -2,6 +2,7 @@ import { Injectable } from "@angular/core";
 import { GameMap } from "../../models/game-map";
 import { GameEngineService } from "../game-engine/game-engine.service";
 import { ImageLocation, ObjectType } from "../../models/game-object";
+import { OUT_OF_BOUND } from "../../models/tile";
 
 @Injectable({
     providedIn: "root"
@@ -29,17 +30,19 @@ export class GameMapManagerService {
                 // Drawing all the tiles.
                 for (let row = 0; row < gameMap._tiles.length; ++row) {
                     for (let col = 0; col < gameMap._tiles[row].length; ++col) {
-                        const posX = col * gameMap._tileWidth;
-                        const posY = row * gameMap._tileHeight;
 
-                        if (gameMap._tiles[row][col].type === ObjectType.Walkable) {
-                            ctx.drawImage(walkableImage, posX, posY);
-                        }
-                        else if (gameMap._tiles[row][col].type === ObjectType.BreakableItem) {
-                            ctx.drawImage(breakableImage, posX, posY);
-                        }
-                        else if (gameMap._tiles[row][col].type === ObjectType.Wall) {
-                            ctx.drawImage(wallImage, posX, posY);
+                        if (gameMap._tiles[row][col] !== OUT_OF_BOUND) {
+                            const tileInfo = gameMap._tiles[row][col].info;
+
+                            if (tileInfo.type === ObjectType.Walkable) {
+                                ctx.drawImage(walkableImage, tileInfo.coordinates._x, tileInfo.coordinates._y);
+                            }
+                            else if (tileInfo.type === ObjectType.BreakableItem) {
+                                ctx.drawImage(breakableImage, tileInfo.coordinates._x, tileInfo.coordinates._y);
+                            }
+                            else if (tileInfo.type === ObjectType.Wall) {
+                                ctx.drawImage(wallImage, tileInfo.coordinates._x, tileInfo.coordinates._y);
+                            }
                         }
                     }
                 }

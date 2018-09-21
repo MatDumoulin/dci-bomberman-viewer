@@ -1,7 +1,7 @@
-import { GameObject } from "./game-object";
+import { Tile } from "./tile";
 
 export interface GameMap {
-    _tiles: GameObject[][];
+    _tiles: Tile[][];
     _tileWidth: number; /** In pixels */
     _tileHeight: number; /** In pixels */
 }
