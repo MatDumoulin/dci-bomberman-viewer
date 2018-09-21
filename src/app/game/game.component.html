@@ -12,7 +12,7 @@
             <button *ngIf="hasJoinedGame" (click)="leaveGame()">Leave Game</button>
         </div>
 
-        <canvas id="bomberman-game" width="480" height="480" tabindex="0" (keydown)="onKeyDown($event)" (keyup)="onKeyUp($event)"></canvas>
+        <canvas id="bomberman-game" width="480" height="480" tabindex="0" (keydown)="onActionInput($event)" (keyup)="onActionInput($event)"></canvas>
     </div>
 
 </div>

@@ -210,7 +210,7 @@ export class GameComponent implements OnInit, OnDestroy {
         this.hasJoinedGame = false;
     }
 
-    onKeyDown(event: KeyboardEvent): void {
+    onActionInput(event: KeyboardEvent): void {
         if (this.hasJoinedGame) {
 
             let actions: PlayerAction;
@@ -222,14 +222,21 @@ export class GameComponent implements OnInit, OnDestroy {
                 actions = Object.assign({}, this._previousActions);
             }
 
+            const isKeyDown = event.type === "keydown";
+
             if (event.key === "ArrowUp") {
-                actions.move_up = true;
+                actions.move_up = isKeyDown;
             } else if (event.key === "ArrowDown") {
-                actions.move_down = true;
+                actions.move_down = isKeyDown;
             } else if (event.key === "ArrowLeft") {
-                actions.move_left = true;
+                actions.move_left = isKeyDown;
             } else if (event.key === "ArrowRight") {
-                actions.move_right = true;
+                actions.move_right = isKeyDown;
+            }
+
+            if (event.key === " ") {
+                actions.plant_bomb = isKeyDown;
+                console.log(actions.plant_bomb);
             }
 
             // Verify if actions have changed
@@ -238,7 +245,8 @@ export class GameComponent implements OnInit, OnDestroy {
                 this._previousActions.move_down !== actions.move_down ||
                 this._previousActions.move_up !== actions.move_up ||
                 this._previousActions.move_left !== actions.move_left ||
-                this._previousActions.move_right !== actions.move_right;
+                this._previousActions.move_right !== actions.move_right ||
+                this._previousActions.plant_bomb !== actions.plant_bomb;
 
             this._previousActions = actions;
 
