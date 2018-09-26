@@ -5,7 +5,8 @@ export enum ImageLocation {
     walkable = "assets/test.png",
     wall = "assets/wall.png",
     collectibles = "",
-    player = "assets/cat-sprite.png"
+    player = "assets/cat-sprite.png",
+    bomb = "assets/bomb.png"
 }
 
 export enum ObjectType {

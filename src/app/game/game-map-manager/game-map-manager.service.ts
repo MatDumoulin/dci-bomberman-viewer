@@ -51,4 +51,31 @@ export class GameMapManagerService {
             .catch(error => reject(error));
         });
     }
+
+    drawBombsAndExplosions(ctx: CanvasRenderingContext2D, gameMap: GameMap): Promise<void> {
+        return new Promise((resolve, reject) => {
+            // First, we get all of our images. That way, we can assume that all of our images are in memory.
+            const bombPromise = this._gameEngineService.getImage(ImageLocation.bomb);
+            // TODO: Add explosion image
+            const allImagesPromise = Promise.all([bombPromise]);
+
+            // The imagesArray follows the same order as the array used in the Promise.all function.
+            allImagesPromise.then(imagesArray => {
+                const bombImage = imagesArray[0];
+
+                // Drawing all the tiles.
+                for (let row = 0; row < gameMap._tiles.length; ++row) {
+                    for (let col = 0; col < gameMap._tiles[row].length; ++col) {
+
+                        if (gameMap._tiles[row][col].bombs.length > 0) {
+                            const tileInfo = gameMap._tiles[row][col].info;
+                            ctx.drawImage(bombImage, tileInfo.coordinates._x, tileInfo.coordinates._y);
+                        }
+                    }
+                }
+                resolve();
+            })
+            .catch(error => reject(error));
+        });
+    }
 }

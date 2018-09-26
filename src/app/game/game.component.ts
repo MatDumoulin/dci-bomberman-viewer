@@ -117,6 +117,7 @@ export class GameComponent implements OnInit, OnDestroy {
         // Awaits and promises are used since the draw order determines the z-index on the canvas.
         // Thus, we got to keep a clear draw order.
         await this._gameMapManagerService.drawMap(ctx, gameState.gameMap);
+        await this._gameMapManagerService.drawBombsAndExplosions(ctx, gameState.gameMap);
 
         const playerIds = Object.keys(gameState.players);
 
