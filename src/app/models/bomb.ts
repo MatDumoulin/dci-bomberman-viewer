@@ -8,7 +8,7 @@ export class Bomb extends GameObject {
 
     constructor() {
         super();
-        this.width = 32;
-        this.height = 32;
+        this.width = 16;
+        this.height = 16;
     }
 }

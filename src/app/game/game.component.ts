@@ -254,34 +254,4 @@ export class GameComponent implements OnInit, OnDestroy {
             }
         }
     }
-
-    onKeyUp(event: KeyboardEvent): void {
-        if (this.hasJoinedGame) {
-            const actions = Object.assign({}, this._previousActions);
-
-            if (event.key === "ArrowUp") {
-                actions.move_up = false;
-            } else if (event.key === "ArrowDown") {
-                actions.move_down = false;
-            } else if (event.key === "ArrowLeft") {
-                actions.move_left = false;
-            } else if (event.key === "ArrowRight") {
-                actions.move_right = false;
-            }
-
-            // Verify if actions have changed
-            const hasChanged =
-                !this._previousActions ||
-                this._previousActions.move_down !== actions.move_down ||
-                this._previousActions.move_up !== actions.move_up ||
-                this._previousActions.move_left !== actions.move_left ||
-                this._previousActions.move_right !== actions.move_right;
-
-            this._previousActions = actions;
-
-            if (hasChanged) {
-                this._socketService.emit("PlayerAction", {playerId: "mathieu", actions});
-            }
-        }
-    }
 }

@@ -69,7 +69,8 @@ export class GameMapManagerService {
 
                         if (gameMap._tiles[row][col].bombs.length > 0) {
                             const tileInfo = gameMap._tiles[row][col].info;
-                            ctx.drawImage(bombImage, tileInfo.coordinates._x, tileInfo.coordinates._y);
+                            // The + 8 are added since the image is only 16px
+                            ctx.drawImage(bombImage, tileInfo.coordinates._x + 8, tileInfo.coordinates._y + 8);
                         }
                     }
                 }
