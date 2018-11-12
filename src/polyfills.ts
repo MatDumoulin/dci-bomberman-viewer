@@ -78,3 +78,5 @@ import 'zone.js/dist/zone';  // Included with Angular CLI.
 /***************************************************************************************************
  * APPLICATION IMPORTS
  */
+// For colyseus. See: https://discuss.colyseus.io/topic/155/buffer-not-defined-error-angular-6.
+global.Buffer = global.Buffer || require('buffer').Buffer;

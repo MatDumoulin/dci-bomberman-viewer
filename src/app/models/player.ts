@@ -1,10 +1,12 @@
 import { GameObject, ObjectType } from "./game-object";
+import { Bomb } from "./bomb";
 
 export type PlayerId = string;
 
 export class Player extends GameObject {
     animationFrame = 0;
     playerId: PlayerId;
+    isAlive: boolean;
     currentActions: PlayerAction;
     previousDirection: Direction = Direction.Down;
 
@@ -18,6 +20,7 @@ export class Player extends GameObject {
         this.coordinates = player.coordinates;
         this.width = player.width;
         this.height = player.height;
+        this.isAlive = player.isAlive;
     }
 
     changeActions(newActions: PlayerAction): void {
@@ -60,6 +63,7 @@ export class Player extends GameObject {
     changeState(newState: PlayerFromServer): void {
         this.changeActions(newState.actions);
         this.coordinates = newState.coordinates;
+        this.isAlive = newState.isAlive;
     }
 
     animate(): void {
@@ -81,6 +85,13 @@ export interface PlayerFromServer extends GameObject {
     playerId: PlayerId;
     actions: PlayerAction;
     type: ObjectType;
+    /** The amount of pixels that the player moves at every game tick */
+    speed: number;
+    /** Maximum number of bombs that the player can drop at a time. */
+    maxBombCount: number;
+    /** All the bombs currently in the map that were dropped by the player */
+    bombs: Bomb[];
+    isAlive: boolean;
 }
 
 // Moves that the player can do.

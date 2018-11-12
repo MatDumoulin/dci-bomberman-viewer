@@ -5,9 +5,13 @@ export class Tile {
     info: GameObject;
     bombs: Bomb[] = [];
     isOnFire = false;
+    row: number;
+    col: number;
 
-    constructor(info: GameObject) {
+    constructor(info: GameObject, row: number, col: number) {
         this.info = info;
+        this.row = row;
+        this.col = col;
     }
 }
 

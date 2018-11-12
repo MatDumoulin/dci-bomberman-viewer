@@ -1,5 +1,5 @@
 import { GameMap } from "./game-map";
-import { PlayerFromServer, Player } from "./player";
+import { PlayerFromServer, Player, PlayerId } from "./player";
 
 export interface GameState {
     gameId: string;
@@ -9,6 +9,8 @@ export interface GameState {
     paused: boolean;
     isOver: boolean;
     hasStarted: boolean;
+    time: number;
+    winner: PlayerId;
 }
 
 export interface GameStateFromServer {
@@ -19,4 +21,6 @@ export interface GameStateFromServer {
     paused: boolean;
     isOver: boolean;
     hasStarted: boolean;
+    time: number;
+    winner: PlayerId;
 }

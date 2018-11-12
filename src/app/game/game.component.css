@@ -33,3 +33,7 @@ canvas {
     justify-content: space-between;
     width: 100%;
 }
+
+.timer {
+    margin-top: 15px;
+}

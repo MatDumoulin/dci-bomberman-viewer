@@ -2,7 +2,6 @@ import { Injectable } from "@angular/core";
 import { Player, Direction } from "../../models/player";
 import { GameEngineService } from "../game-engine/game-engine.service";
 import { ImageLocation } from "../../models/game-object";
-import { Point } from "../../models/point";
 
 @Injectable({
     providedIn: "root"
@@ -53,8 +52,8 @@ export class PlayerManagerService {
                         32,
                         spritePosition.col,
                         spritePosition.row,
-                        32,
-                        32
+                        30,
+                        30
                     );
 
                     resolve();

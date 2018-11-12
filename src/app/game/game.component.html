@@ -13,6 +13,10 @@
         </div>
 
         <canvas id="bomberman-game" width="480" height="480" tabindex="0" (keydown)="onActionInput($event)" (keyup)="onActionInput($event)"></canvas>
+        
+        <div class="timer" *ngIf="currentGameState">
+            <p>{{getGameTime()}}</p>
+        </div>
     </div>
 
 </div>

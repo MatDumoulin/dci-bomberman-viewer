@@ -1,12 +1,12 @@
 import { Component, OnInit, OnDestroy } from "@angular/core";
 import { ActivatedRoute } from "@angular/router";
-import { Subscription } from "rxjs";
-import { SocketService } from "../socket/socket.service";
+import { Client, Room, DataChange } from "colyseus.js";
 
 import { GameMapManagerService } from "./game-map-manager/game-map-manager.service";
 import { GameState, GameStateFromServer } from "../models/game-state";
 import { PlayerManagerService } from "./player-manager/player-manager.service";
-import { Player, PlayerAction } from "../models/player";
+import { Player, PlayerAction, PlayerId } from "../models/player";
+import { Message } from '../comm';
 
 @Component({
     selector: "bomberman-game",
@@ -15,99 +15,72 @@ import { Player, PlayerAction } from "../models/player";
 })
 export class GameComponent implements OnInit, OnDestroy {
     private readonly TICKS_PER_REFRESH = 4; // Game is running at 15 FPS.
-    private _isListeningToSocket = false;
-    private _subscriptions: Subscription[] = [];
-    private _currentGameState: GameState;
+    private _room: Room;
+    private _client: Client;
     private _currentTick = 0;
     private _isViewingGame = false;
+    private _previousActions: PlayerAction;
+    private _serverUrl: string;
+    currentGameState: GameState;
     errors: string[] = [];
     hasJoinedGame = false;
-    private _previousActions: PlayerAction;
 
     constructor(
         private _gameMapManagerService: GameMapManagerService,
         private _playerManagerService: PlayerManagerService,
-        private _route: ActivatedRoute,
-        private _socketService: SocketService
+        private _route: ActivatedRoute
     ) {}
 
     ngOnInit(): void {
-        this._subscriptions.push(
-            this._socketService.errors.subscribe(errors => {
-                if (!errors) {
-                    this.errors = [];
-                } else if (!this.errors.includes(errors)) {
-                    this.errors.push(errors);
-                }
-            })
-        );
+        this._serverUrl = this._route.snapshot.paramMap.get("serverUrl");
+        console.log("Server url: ", this._serverUrl);
 
-        const serverUrl = this._route.snapshot.paramMap.get("serverUrl");
-        console.log("Server url: ", serverUrl);
-        this._socketService
-            .connect(serverUrl)
-            .then(() => this.onSocketConnectionSetUp());
+        this._client = new Client('ws:' + this._serverUrl);
+        this._client.id = "mathieu";
+        this.joinGame();
     }
 
     ngOnDestroy(): void {
-        this._socketService.disconnect();
-
-        for (const sub of this._subscriptions) {
-            sub.unsubscribe();
-        }
+        this._room.leave();
     }
 
     onSocketConnectionSetUp(): void {
-        if (!this._isListeningToSocket) {
-            this._isListeningToSocket = false;
-            this._socketService.on(
-                "viewingGame",
-                (gameState: GameStateFromServer) => {
-                    console.log("We are now viewing the game.");
-                    // Here we want to init the state of the game with the one given by the server.
-                    const initializedPlayers = this.initPlayers(gameState);
 
-                    this._currentGameState = {
-                        ...gameState,
-                        players: initializedPlayers
-                    };
+        this._room.onJoin.add(() => {
+            console.log(this._client.id, "joined", this._room.name);
+            this.hasJoinedGame = true;
+        });
 
-                    this._isViewingGame = true;
-                    this._currentTick = 0;
-                    this.drawLoop();
-                }
-            );
+        this._room.onStateChange.addOnce(() => {
+            console.log("First state change");
+            this.initGameState(this._room.state);
+        });
 
-            this._socketService.on(
-                "StateChanged",
-                (gameState: GameStateFromServer) => {
-                    // Skip this if the player is not yet viewing the game.
-                    if (!this._isViewingGame) {
-                        return;
-                    }
+        this._room.onStateChange.add(() => {
+            // If the game state was initialized previously, colyseus will trigger it immediatly.
+            // Ignore it since our init state will be called.
+            if (!this.currentGameState) {
+                return;
+            }
 
-                    // Here we want to update the current game state to match the new state.
-                    // For some objects, we are storing useful information that we don't want to lose.
-                    const updatedPlayers = this.updatePlayerState(gameState);
+            this.updateState(this._room.state);
+        });
 
-                    this._currentGameState = {
-                        ...gameState,
-                        players: updatedPlayers
-                    };
-                }
-            );
-        }
+        this._room.listen("winner", (change: DataChange) => {
+            if (change.value !== null) {
+                console.log("Player ", change.value, " has won!");
+            }
+        });
+
+        this._client.onError.add((roomError) => {
+            const errorMessage = "Unable to connect to server with url " + this._serverUrl;
+
+            if (this.errors.findIndex(error => error === errorMessage) === -1) {
+                this.errors.push(errorMessage);
+            }
+        });
     }
 
-    private drawLoop(): void {
-        window.requestAnimationFrame(this.drawLoop.bind(this));
-        this._currentTick++;
-
-        if (this._currentTick === this.TICKS_PER_REFRESH) {
-            this.draw(this._currentGameState);
-            this._currentTick = 0;
-        }
-    }
 
     private async draw(gameState: GameState): Promise<void> {
         // First of, we clear the canvas.
@@ -123,7 +96,14 @@ export class GameComponent implements OnInit, OnDestroy {
 
         for (let i = 0; i < playerIds.length; ++i) {
             const player = gameState.players[playerIds[i]];
-            await this._playerManagerService.drawPlayer(ctx, player);
+
+            if (player.isAlive) {
+                await this._playerManagerService.drawPlayer(ctx, player);
+            }
+        }
+
+        if (this.currentGameState.winner) {
+            this.drawWinnerScreen(this.currentGameState.winner);
         }
     }
 
@@ -134,16 +114,26 @@ export class GameComponent implements OnInit, OnDestroy {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
 
-    private updatePlayerState(
-        newState: GameStateFromServer
-    ): { [playerId: string]: Player } {
+    private updateState(gameState: GameStateFromServer) {
+
+        // Here we want to update the current game state to match the new state.
+        // For some objects, we are storing useful information that we don't want to lose.
+        const updatedPlayers = this.updatePlayerState(gameState);
+
+        this.currentGameState = {
+            ...gameState,
+            players: updatedPlayers
+        };
+
+        this.draw(this.currentGameState);
+    }
+
+    private updatePlayerState(newState: GameStateFromServer): { [playerId: string]: Player } {
         const players: { [playerId: string]: Player } = {};
         const playerIds = Object.keys(newState.players);
 
         for (const playerId of playerIds) {
-            const playerFromCurrentState = this._currentGameState.players[
-                playerId
-            ];
+            const playerFromCurrentState = this.currentGameState.players[playerId];
             const playerFromNewState = newState.players[playerId];
 
             if (playerFromCurrentState) {
@@ -161,6 +151,19 @@ export class GameComponent implements OnInit, OnDestroy {
         return players;
     }
 
+    private initGameState(gameState: GameStateFromServer) {
+        // Here we want to init the state of the game with the one given by the server.
+        const initializedPlayers = this.initPlayers(gameState);
+
+        this.currentGameState = {
+            ...gameState,
+            players: initializedPlayers
+        };
+
+        this._isViewingGame = true;
+        this.draw(this.currentGameState);
+    }
+
     private initPlayers(
         newState: GameStateFromServer
     ): { [playerId: string]: Player } {
@@ -174,10 +177,6 @@ export class GameComponent implements OnInit, OnDestroy {
 
         return players;
     }
-
-    /*     private initGameState(gameState: GameStateFromServer): void {
-
-    } */
 
     private getCanvasContext(): CanvasRenderingContext2D {
         const canvas = this.getCanvas();
@@ -198,14 +197,14 @@ export class GameComponent implements OnInit, OnDestroy {
 
     // To play the game
     joinGame(): void {
-        this._socketService.emit("joinGame", "mathieu");
-        this._socketService.on("GameJoined", () => {
-            this.hasJoinedGame = true;
-        });
+        this._room = this._client.join("dci");
+        this.onSocketConnectionSetUp();
     }
 
     leaveGame(): void {
-        this._socketService.emit("leaveGame");
+        /* this._socketService.emit("leaveGame"); */
+
+        this._room.leave();
         this.hasJoinedGame = false;
     }
 
@@ -235,7 +234,6 @@ export class GameComponent implements OnInit, OnDestroy {
 
             if (event.key === " ") {
                 actions.plant_bomb = isKeyDown;
-                console.log(actions.plant_bomb);
             }
 
             // Verify if actions have changed
@@ -250,8 +248,31 @@ export class GameComponent implements OnInit, OnDestroy {
             this._previousActions = actions;
 
             if (hasChanged) {
-                this._socketService.emit("PlayerAction", {playerId: "mathieu", actions});
+                this._room.send(new Message("PlayerAction", {playerId: this._client.id, actions}));
             }
         }
+    }
+
+    getGameTime() {
+        if (!this.currentGameState) {
+            return null;
+        }
+        // Minutes:Seconds
+        return `${Math.floor(this.currentGameState.time / 60000)}:${Math.floor(this.currentGameState.time / 1000) % 60}`;
+    }
+
+    private drawWinnerScreen(playerId: PlayerId) {
+        const ctx = this.getCanvasContext();
+        const canvas = this.getCanvas();
+
+        ctx.globalAlpha = 0.6;
+        ctx.fillStyle = "black";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.globalAlpha = 1.0;
+
+        ctx.font = "24px Marker Felt, fantasy";
+        ctx.fillStyle = "white";
+        ctx.textAlign = "center";
+        ctx.fillText(`Player ${playerId} has won!`, canvas.width / 2, 150, canvas.width);
     }
 }
