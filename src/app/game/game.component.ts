@@ -161,6 +161,7 @@ export class GameComponent implements OnInit, OnDestroy {
         };
 
         this._isViewingGame = true;
+        this.errors = [];
         this.draw(this.currentGameState);
     }
 

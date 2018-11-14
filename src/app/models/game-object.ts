@@ -7,7 +7,10 @@ export enum ImageLocation {
     collectibles = "",
     player = "assets/cat-sprite.png",
     bomb = "assets/bomb.png",
-    explosion = "assets/explosion.png"
+    explosion = "assets/explosion.png",
+    powerUp = "assets/power-up.png",
+    bombUp = "assets/bomb-up.png",
+    speedUp = "assets/speed-up.png"
 }
 
 export enum ObjectType {
@@ -15,8 +18,10 @@ export enum ObjectType {
     Walkable = "WALKABLE",
     BreakableItem = "BREAKABLE",
     Player = "PLAYER",
-    Collectible = "COLLECTIBLE",
-    Bomb = "BOMB"
+    Bomb = "BOMB",
+    PowerUp = "POWER-UP",
+    SpeedUp = "SPEED-UP",
+    BombUp = "POWER-UP"
 }
 
 /** Any object that can be displayed on the map has these properties. */

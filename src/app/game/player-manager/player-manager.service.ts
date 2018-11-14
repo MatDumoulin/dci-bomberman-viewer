@@ -53,7 +53,8 @@ export class PlayerManagerService {
                         spritePosition.col,
                         spritePosition.row,
                         30,
-                        30
+                        30,
+                        2
                     );
 
                     resolve();

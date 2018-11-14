@@ -7,4 +7,7 @@ Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app w
 ## Attribution Notice
 Special thanks to:
 * `https://opengameart.org/node/69399` for the cat spritesheet.
-* Blood _ Copyright 2011 by shimobayashi `http://opengameart.org/content/teqq-princess-image-materials` Color edit to look like explosion Copyright 2012 by qubodup 
+* Blood _ Copyright 2011 by shimobayashi `http://opengameart.org/content/teqq-princess-image-materials` Color edit to look like explosion Copyright 2012 by qubodup.
+* `https://ruwlabs.com/` for the speed upgrade icon. The background color was added by Mathieu Dumoulin for this game.
+* `https://www.iconfinder.com/webalys` for the power upgrade icon. The colors were modified by Mathieu Dumoulin for this game.
+* `https://www.iconfinder.com/ibrandify` for the bomb upgrade icon. The background color was added by Mathieu Dumoulin for this game.
