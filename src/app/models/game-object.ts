@@ -21,7 +21,7 @@ export enum ObjectType {
     Bomb = "BOMB",
     PowerUp = "POWER-UP",
     SpeedUp = "SPEED-UP",
-    BombUp = "POWER-UP"
+    BombUp = "BOMB-UP"
 }
 
 /** Any object that can be displayed on the map has these properties. */
