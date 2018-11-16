@@ -199,7 +199,7 @@ export class GameComponent implements OnInit, OnDestroy {
 
     // To play the game
     joinGame(): void {
-        this._room = this._client.join("dci");
+        this._room = this._client.join("dci", {isPlaying: true});
         this.onSocketConnectionSetUp();
     }
 
