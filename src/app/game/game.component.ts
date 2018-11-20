@@ -14,13 +14,12 @@ import { Message } from '../comm';
     styleUrls: ["./game.component.css"]
 })
 export class GameComponent implements OnInit, OnDestroy {
-    private readonly TICKS_PER_REFRESH = 4; // Game is running at 15 FPS.
     private _room: Room;
     private _client: Client;
-    private _currentTick = 0;
     private _isViewingGame = false;
     private _previousActions: PlayerAction;
     private _serverUrl: string;
+    userId: string;
     currentGameState: GameState;
     errors: string[] = [];
     hasJoinedGame = false;
@@ -36,8 +35,6 @@ export class GameComponent implements OnInit, OnDestroy {
         console.log("Server url: ", this._serverUrl);
 
         this._client = new Client('ws:' + this._serverUrl);
-        this._client.id = "mathieu";
-        this.joinGame();
     }
 
     ngOnDestroy(): void {
@@ -199,13 +196,23 @@ export class GameComponent implements OnInit, OnDestroy {
 
     // To play the game
     joinGame(): void {
+        if (!this.userId) {
+            this.errors.push("L'identifiant de l'utilisateur ne peut pas être vide, you hacker.");
+            this.userId = "";
+            return;
+        }
+        else if (!this.userId.trim()) {
+            this.errors.push("Don't try to fool me with your whitespaces!");
+            this.userId = "";
+            return;
+        }
+
+        this._client.id = this.userId;
         this._room = this._client.join("dci", {isPlaying: true});
         this.onSocketConnectionSetUp();
     }
 
     leaveGame(): void {
-        /* this._socketService.emit("leaveGame"); */
-
         this._room.leave();
         this.hasJoinedGame = false;
     }
