@@ -35,6 +35,9 @@ export class GameComponent implements OnInit, OnDestroy {
         console.log("Server url: ", this._serverUrl);
 
         this._client = new Client('ws:' + this._serverUrl);
+        this._room = this._client.join("dci", {isPlaying: false});
+        this._isViewingGame = true;
+        this.onSocketConnectionSetUp();
     }
 
     ngOnDestroy(): void {
@@ -45,7 +48,10 @@ export class GameComponent implements OnInit, OnDestroy {
 
         this._room.onJoin.add(() => {
             console.log(this._client.id, "joined", this._room.name);
-            this.hasJoinedGame = true;
+
+            if (!this._isViewingGame) {
+                this.hasJoinedGame = true;
+            }
         });
 
         this._room.onStateChange.addOnce(() => {
@@ -70,6 +76,7 @@ export class GameComponent implements OnInit, OnDestroy {
         });
 
         this._client.onError.add((roomError) => {
+            console.log("An error occurred in the room:", roomError);
             const errorMessage = "Unable to connect to server with url " + this._serverUrl;
 
             if (this.errors.findIndex(error => error === errorMessage) === -1) {
@@ -207,14 +214,19 @@ export class GameComponent implements OnInit, OnDestroy {
             return;
         }
 
+        // First, we need to leave the room since we are automatically registered as a viewer.
+        this._room.leave();
+        this._isViewingGame = false;
+        // Then, we can connect to the game as a player.
         this._client.id = this.userId;
-        this._room = this._client.join("dci", {isPlaying: true});
+        this._room = this._client.join("dci", {isPlaying: true, playerId: this.userId});
         this.onSocketConnectionSetUp();
     }
 
     leaveGame(): void {
         this._room.leave();
         this.hasJoinedGame = false;
+        this._isViewingGame = true;
     }
 
     onActionInput(event: KeyboardEvent): void {
@@ -283,5 +295,9 @@ export class GameComponent implements OnInit, OnDestroy {
         ctx.fillStyle = "white";
         ctx.textAlign = "center";
         ctx.fillText(`Player ${playerId} has won!`, canvas.width / 2, 150, canvas.width);
+    }
+
+    hasGameStarted(): boolean {
+        return this.currentGameState.hasStarted;
     }
 }

@@ -64,4 +64,10 @@ export class GameEngineService implements OnDestroy {
             displayHeight // The height of our image in the game.
         );
     }
+
+    drawText(text: string, ctx: CanvasRenderingContext2D, color: string, position: Point, align: CanvasTextAlign = "center"): void {
+        ctx.fillStyle = color;
+        ctx.textAlign = align;
+        ctx.fillText(text, position._x, position._y);
+    }
 }

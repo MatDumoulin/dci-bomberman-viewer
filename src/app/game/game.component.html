@@ -11,7 +11,7 @@
             <form>
                 <input type="text" name="clientId" placeholder="Enter player name" [(ngModel)]="userId" [disabled]="hasJoinedGame">
                 <button *ngIf="!hasJoinedGame" (click)="joinGame()" [disabled]="!userId">Join Game</button>
-                <button *ngIf="hasJoinedGame" (click)="leaveGame()">Leave Game</button>
+                <button *ngIf="hasJoinedGame" (click)="leaveGame()" [disabled]="hasGameStarted()">Leave Game</button>
             </form>
         </div>
 

@@ -2,6 +2,7 @@ import { Injectable } from "@angular/core";
 import { Player, Direction } from "../../models/player";
 import { GameEngineService } from "../game-engine/game-engine.service";
 import { ImageLocation } from "../../models/game-object";
+import { Point } from "src/app/models/point";
 
 @Injectable({
     providedIn: "root"
@@ -23,9 +24,9 @@ export class PlayerManagerService {
                     };
 
                     // The player sprite contains 4 rows, each one describe an action.
-                    if (player.currentActions.move_right) {
+                    if (player.currentActions.move_up) {
                         spritePosition.row = 0;
-                    } else if (player.currentActions.move_up) {
+                    } else if (player.currentActions.move_right) {
                         spritePosition.row = 1;
                     } else if (player.currentActions.move_down) {
                         spritePosition.row = 2;
@@ -33,10 +34,10 @@ export class PlayerManagerService {
                         spritePosition.row = 3;
                     }
                     // If the player is not moving, set his sprite to the direction he's facing.
-                    else if (player.previousDirection === Direction.Right) {
+                    else if (player.previousDirection === Direction.Up) {
                         spritePosition.row = 0;
-                    } else if (player.previousDirection === Direction.Up) {
-                        spritePosition.row = 1;
+                    } else if (player.previousDirection === Direction.Right) {
+                            spritePosition.row = 1;
                     } else if (player.previousDirection === Direction.Down) {
                         spritePosition.row = 2;
                     } else {
@@ -44,6 +45,7 @@ export class PlayerManagerService {
                         spritePosition.row = 3;
                     }
 
+                    // Drawing the player's sprite
                     this._gameEngineService.drawSprite(
                         ctx,
                         playerSpritesheet,
@@ -52,9 +54,22 @@ export class PlayerManagerService {
                         32,
                         spritePosition.col,
                         spritePosition.row,
-                        30,
-                        30,
+                        28,
+                        28,
                         2
+                    );
+
+                    // And his name.
+                    const playerNamePosition: Point = {
+                        _x: player.coordinates._x + player.width / 2,
+                        _y: player.coordinates._y,
+                    };
+
+                    this._gameEngineService.drawText(
+                        player.playerId,
+                        ctx,
+                        "white",
+                        playerNamePosition
                     );
 
                     resolve();
