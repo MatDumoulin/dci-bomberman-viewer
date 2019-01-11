@@ -1,0 +1,18 @@
+<div class="room-list">
+    <h4 class="room-list-title">All games to view</h4>
+    <div *ngIf="rooms.length > 0; else noRooms">
+        <div class="room" [ngClass]="{selected: room.roomId === idOfSelectedRoom}" *ngFor="let room of rooms; trackBy: trackByRoomName" (click)="onRoomClick(room)">
+            <p>{{room.roomId}}</p>
+
+            <p>
+                <i class="material-icons view-count">visibility</i>
+                {{room.clients}}
+            </p>
+        </div>
+    </div>
+
+    <ng-template #noRooms>
+        <p>No rooms to show</p>
+    </ng-template>
+</div>
+

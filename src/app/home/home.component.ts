@@ -7,14 +7,14 @@ import { Router } from "@angular/router";
   styleUrls: ['./home.component.css']
 })
 export class HomeComponent {
-    gameUrl: string;
+    serverUrl: string;
 
     constructor(private _router: Router) {
 
     }
 
-    viewGame(): void {
-      const url = `/game/${this.gameUrl}`;
+    joinServer(): void {
+      const url = `/game/${this.serverUrl}`;
 
       this._router.navigateByUrl(url);
     }

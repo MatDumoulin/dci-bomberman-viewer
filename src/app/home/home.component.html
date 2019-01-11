@@ -1,14 +1,14 @@
 <div class="container">
     <h1>
-        Welcome to the dci-éts bomberman game!
+        Welcome to the DCI-ÉTS bomberman game!
     </h1>
 
     <img class="home-image" src="assets/dci-ets-full.png">
 
-    <h2>Please enter the url of the game to watch</h2>
+    <h2>Please enter the url of the server</h2>
 
     <div class="game-url-container">
-        <input id="url" type="text" placeholder="localhost:8000" [(ngModel)]="gameUrl" #url="ngModel" required>
-        <button (click)="viewGame()" [disabled]="url.invalid">Spectate Game</button>
+        <input id="url" type="text" placeholder="localhost:8000" [(ngModel)]="serverUrl" #url="ngModel" required>
+        <button (click)="joinServer()" [disabled]="url.invalid">Join Server</button>
     </div>
 </div>

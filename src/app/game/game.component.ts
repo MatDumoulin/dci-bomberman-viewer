@@ -1,11 +1,11 @@
 import { Component, OnInit, OnDestroy } from "@angular/core";
 import { ActivatedRoute } from "@angular/router";
 import { Client, Room, DataChange } from "colyseus.js";
+import { RoomAvailable } from "colyseus.js/lib/Room";
 
 import { GameMapManagerService } from "./game-map-manager/game-map-manager.service";
-import { GameState, GameStateFromServer } from "../models/game-state";
+import { GameState, GameStateFromServer, Player, PlayerAction, PlayerId, ClientOptions } from "../models";
 import { PlayerManagerService } from "./player-manager/player-manager.service";
-import { Player, PlayerAction, PlayerId } from "../models/player";
 import { Message } from '../comm';
 
 @Component({
@@ -15,14 +15,17 @@ import { Message } from '../comm';
 })
 export class GameComponent implements OnInit, OnDestroy {
     private _room: Room;
-    private _client: Client;
     private _isViewingGame = false;
     private _previousActions: PlayerAction;
     private _serverUrl: string;
+    private _playerId: string;
+    client: Client;
     userId: string;
+    roomToView: string;
     currentGameState: GameState;
     errors: string[] = [];
     hasJoinedGame = false;
+
 
     constructor(
         private _gameMapManagerService: GameMapManagerService,
@@ -33,21 +36,31 @@ export class GameComponent implements OnInit, OnDestroy {
     ngOnInit(): void {
         this._serverUrl = this._route.snapshot.paramMap.get("serverUrl");
         console.log("Server url: ", this._serverUrl);
-
-        this._client = new Client('ws:' + this._serverUrl);
-        this._room = this._client.join("dci", {isPlaying: false});
+        this.client = new Client('ws:' + this._serverUrl);
+        this._room = this.client.join("dci", {isPlaying: false});
         this._isViewingGame = true;
         this.onSocketConnectionSetUp();
     }
 
     ngOnDestroy(): void {
-        this._room.leave();
+        if (this._room) {
+            this._room.leave();
+        }
+
+        if (this.client) {
+            this.client.close();
+        }
     }
 
     onSocketConnectionSetUp(): void {
+        // We begin by removing all listeners to prevent listener stacking.
+        this._room.onJoin.removeAll();
+        this._room.onStateChange.removeAll();
+        this.client.onError.removeAll();
 
+        // Then, we subscribe to the events that we want.
         this._room.onJoin.add(() => {
-            console.log(this._client.id, "joined", this._room.name);
+            console.log(this.client.id, "joined", this._room.name);
 
             if (!this._isViewingGame) {
                 this.hasJoinedGame = true;
@@ -56,6 +69,7 @@ export class GameComponent implements OnInit, OnDestroy {
 
         this._room.onStateChange.addOnce(() => {
             console.log("First state change");
+            this.roomToView = this._room.id;
             this.initGameState(this._room.state);
         });
 
@@ -75,7 +89,7 @@ export class GameComponent implements OnInit, OnDestroy {
             }
         });
 
-        this._client.onError.add((roomError) => {
+        this.client.onError.add((roomError) => {
             console.log("An error occurred in the room:", roomError);
             const errorMessage = "Unable to connect to server with url " + this._serverUrl;
 
@@ -217,16 +231,28 @@ export class GameComponent implements OnInit, OnDestroy {
         // First, we need to leave the room since we are automatically registered as a viewer.
         this._room.leave();
         this._isViewingGame = false;
+        this._playerId = this.userId;
+
         // Then, we can connect to the game as a player.
-        this._client.id = this.userId;
-        this._room = this._client.join("dci", {isPlaying: true, playerId: this.userId});
+        const clientOptions: ClientOptions = {isPlaying: true, playerId: this._playerId};
+
+        if (this.roomToView) {
+            clientOptions.roomToJoin = this.roomToView;
+        }
+
+        this._room = this.client.join("dci", clientOptions);
         this.onSocketConnectionSetUp();
     }
 
     leaveGame(): void {
-        this._room.leave();
+        if (this._room) {
+            this._room.leave();
+        }
+        this._room = null;
         this.hasJoinedGame = false;
         this._isViewingGame = true;
+        this.currentGameState = null;
+        this.clearCanvas();
     }
 
     onActionInput(event: KeyboardEvent): void {
@@ -269,7 +295,7 @@ export class GameComponent implements OnInit, OnDestroy {
             this._previousActions = actions;
 
             if (hasChanged) {
-                this._room.send(new Message("PlayerAction", {playerId: this._client.id, actions}));
+                this._room.send(new Message("PlayerAction", {playerId: this._playerId, actions}));
             }
         }
     }
@@ -299,5 +325,23 @@ export class GameComponent implements OnInit, OnDestroy {
 
     hasGameStarted(): boolean {
         return this.currentGameState.hasStarted;
+    }
+
+    updateSelectedRoom(newRoomToSelect: RoomAvailable): void {
+        if (newRoomToSelect.roomId !== this.roomToView) {
+            this.roomToView = newRoomToSelect.roomId;
+
+            // Switching up the game that is watched by the user.
+            if (this._room) {
+                this.leaveGame();
+            }
+            // Join the game
+            const clientOptions: ClientOptions = {isPlaying: false};
+            if (this.roomToView) {
+                clientOptions.roomToJoin = this.roomToView;
+            }
+            this._room = this.client.join("dci", clientOptions);
+            this.onSocketConnectionSetUp();
+        }
     }
 }

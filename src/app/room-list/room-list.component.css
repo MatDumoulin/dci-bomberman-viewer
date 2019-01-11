@@ -1,0 +1,50 @@
+.room-list {
+    border: solid black 1px;
+    border-radius: 10px;
+    background: rgba(0,0,0, 0.8);
+    padding: 0 10px 10px 10px;
+    height: 300px;
+    width: 200px;
+    overflow-y: auto;
+}
+
+.room-list-title {
+    color: white;
+    text-align: center;
+    width: 100%;
+}
+
+.room {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    color: white;
+    font-size: 0.9em;
+    cursor: pointer;
+}
+
+.room:hover {
+    background: rgba(255, 255, 255, 0.5);
+    color: black;
+}
+
+.room:not(:last-child) {
+    margin-bottom: 5px;
+}
+
+.room p {
+    margin: 0px;
+    display: flex;
+    align-items: center;
+}
+
+.room.selected {
+    background: rgb(33, 77, 160);
+}
+
+.view-count {
+    font-size: 1em;
+    margin-right: 2px;
+}

@@ -1,0 +1,13 @@
+<p>
+  leaderboard works!
+</p>
+
+<div class="container">
+    <div class="errors-container">
+        <div class="error" *ngFor="let error of errors">
+            <p>{{error}}</p>
+        </div>
+    </div>
+
+    <pre>{{stats | json}}</pre>
+</div>

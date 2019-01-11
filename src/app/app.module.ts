@@ -8,13 +8,17 @@ import { AppComponent } from './app.component';
 import { GameComponent } from './game/game.component';
 import { NotFoundComponent } from './not-found/not-found.component';
 import { HomeComponent } from './home/home.component';
+import { RoomListComponent } from './room-list/room-list.component';
+import { LeaderboardComponent } from './leaderboard/leaderboard.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     GameComponent,
     NotFoundComponent,
-    HomeComponent
+    HomeComponent,
+    RoomListComponent,
+    LeaderboardComponent
   ],
   imports: [
     BrowserModule,
