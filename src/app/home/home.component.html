@@ -8,7 +8,15 @@
     <h2>Please enter the url of the server</h2>
 
     <div class="game-url-container">
-        <input id="url" type="text" placeholder="localhost:8000" [(ngModel)]="serverUrl" #url="ngModel" required>
-        <button (click)="joinServer()" [disabled]="url.invalid">Join Server</button>
+
+        <mat-form-field>
+            <mat-label>Server url</mat-label>
+            <input id="url" type="text" placeholder="localhost:8000" [(ngModel)]="serverUrl" #url="ngModel" matInput required>
+            <mat-error *ngIf="url.hasError('required')">
+                Server url is <strong>required</strong>
+            </mat-error>
+        </mat-form-field>
+
+        <button color="primary" (click)="joinServer()" [disabled]="url.invalid" mat-raised-button>Join Server</button>
     </div>
 </div>

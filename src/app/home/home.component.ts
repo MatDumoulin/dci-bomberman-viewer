@@ -14,7 +14,7 @@ export class HomeComponent {
     }
 
     joinServer(): void {
-      const url = `/game/${this.serverUrl}`;
+      const url = `/${this.serverUrl}/game`;
 
       this._router.navigateByUrl(url);
     }

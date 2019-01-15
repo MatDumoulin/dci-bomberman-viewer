@@ -1,5 +1,4 @@
 import { Component, OnInit, OnDestroy } from "@angular/core";
-import { ActivatedRoute } from "@angular/router";
 import { Client, Room, DataChange } from "colyseus.js";
 import { RoomAvailable } from "colyseus.js/lib/Room";
 
@@ -7,6 +6,7 @@ import { GameMapManagerService } from "./game-map-manager/game-map-manager.servi
 import { GameState, GameStateFromServer, Player, PlayerAction, PlayerId, ClientOptions } from "../models";
 import { PlayerManagerService } from "./player-manager/player-manager.service";
 import { Message } from '../comm';
+import { ServerUrlService } from "../services/server-url/server-url.service";
 
 @Component({
     selector: "bomberman-game",
@@ -17,7 +17,6 @@ export class GameComponent implements OnInit, OnDestroy {
     private _room: Room;
     private _isViewingGame = false;
     private _previousActions: PlayerAction;
-    private _serverUrl: string;
     private _playerId: string;
     client: Client;
     userId: string;
@@ -30,24 +29,23 @@ export class GameComponent implements OnInit, OnDestroy {
     constructor(
         private _gameMapManagerService: GameMapManagerService,
         private _playerManagerService: PlayerManagerService,
-        private _route: ActivatedRoute
+        private _serverUrlService: ServerUrlService
     ) {}
 
     ngOnInit(): void {
-        this._serverUrl = this._route.snapshot.paramMap.get("serverUrl");
-        console.log("Server url: ", this._serverUrl);
-        this.client = new Client('ws:' + this._serverUrl);
+        console.log("Server url: ", this._serverUrlService.url);
+        this.client = new Client('ws:' + this._serverUrlService.url);
         this._room = this.client.join("dci", {isPlaying: false});
         this._isViewingGame = true;
         this.onSocketConnectionSetUp();
     }
 
     ngOnDestroy(): void {
-        if (this._room) {
+        if (this._room && this._room.hasJoined) {
             this._room.leave();
         }
 
-        if (this.client) {
+        if (this.client && this.client.id !== null) {
             this.client.close();
         }
     }
@@ -91,7 +89,7 @@ export class GameComponent implements OnInit, OnDestroy {
 
         this.client.onError.add((roomError) => {
             console.log("An error occurred in the room:", roomError);
-            const errorMessage = "Unable to connect to server with url " + this._serverUrl;
+            const errorMessage = "Unable to connect to server with url " + this._serverUrlService.url;
 
             if (this.errors.findIndex(error => error === errorMessage) === -1) {
                 this.errors.push(errorMessage);

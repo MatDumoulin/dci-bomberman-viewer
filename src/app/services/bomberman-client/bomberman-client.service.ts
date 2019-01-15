@@ -24,7 +24,7 @@ export class BombermanClientService implements OnDestroy {
         this.client = new Client('ws:' + serverUrl);
         this.setUpErrorListener();
 
-        return client;
+        return this.client;
     }
 
     isConnected(client: Client): boolean {

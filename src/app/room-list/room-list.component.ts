@@ -18,6 +18,8 @@ export class RoomListComponent implements OnInit, OnDestroy {
     roomChange = new EventEmitter<RoomAvailable>();
 
     rooms: RoomAvailable[] = [];
+    private readonly MAX_FAILED_ATTEMP = 5; // After 5 contiguous error, close the room.
+    private _failedAttempCount = 0;
     private _subscription: Subscription;
 
     constructor() {}
@@ -44,8 +46,16 @@ export class RoomListComponent implements OnInit, OnDestroy {
             this.client.getAvailableRooms("dci", (rooms, err) => {
                 if (err) {
                     console.error(err);
+
+                    if (this._failedAttempCount >= this.MAX_FAILED_ATTEMP) {
+                        this._subscription.unsubscribe();
+                    }
+                    else {
+                        ++this._failedAttempCount;
+                    }
                 }
                 else {
+                    this._failedAttempCount = 0;
                     this.rooms = rooms;
                 }
             });
