@@ -1,22 +1,27 @@
 import { GameMap } from "./game-map";
-import { PlayerFromServer, Player } from "./player";
+import { PlayerFromServer, Player, PlayerId } from "./player";
+import { Upgrade } from "./upgrade";
 
 export interface GameState {
     gameId: string;
     gameMap: GameMap;
     players: { [id: string]: Player };
-    // collectibles: Collectible[];
+    collectibles: Upgrade[];
     paused: boolean;
     isOver: boolean;
     hasStarted: boolean;
+    time: number;
+    winner: PlayerId;
 }
 
 export interface GameStateFromServer {
     gameId: string;
     gameMap: GameMap;
     players: { [id: string]: PlayerFromServer };
-    // collectibles: Collectible[];
+    collectibles: Upgrade[];
     paused: boolean;
     isOver: boolean;
     hasStarted: boolean;
+    time: number;
+    winner: PlayerId;
 }

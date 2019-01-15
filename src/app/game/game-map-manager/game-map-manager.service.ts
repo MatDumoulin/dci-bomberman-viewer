@@ -3,6 +3,8 @@ import { GameMap } from "../../models/game-map";
 import { GameEngineService } from "../game-engine/game-engine.service";
 import { ImageLocation, ObjectType } from "../../models/game-object";
 import { OUT_OF_BOUND } from "../../models/tile";
+import { Point } from "../../models/point";
+import { GameState } from "src/app/models/game-state";
 
 @Injectable({
     providedIn: "root"
@@ -56,24 +58,72 @@ export class GameMapManagerService {
         return new Promise((resolve, reject) => {
             // First, we get all of our images. That way, we can assume that all of our images are in memory.
             const bombPromise = this._gameEngineService.getImage(ImageLocation.bomb);
-            // TODO: Add explosion image
-            const allImagesPromise = Promise.all([bombPromise]);
+            const explosionPromise = this._gameEngineService.getImage(ImageLocation.explosion);
+
+            const allImagesPromise = Promise.all([bombPromise, explosionPromise]);
 
             // The imagesArray follows the same order as the array used in the Promise.all function.
             allImagesPromise.then(imagesArray => {
                 const bombImage = imagesArray[0];
+                const explosionImage = imagesArray[1];
 
                 // Drawing all the tiles.
                 for (let row = 0; row < gameMap._tiles.length; ++row) {
                     for (let col = 0; col < gameMap._tiles[row].length; ++col) {
+                        const tile = gameMap._tiles[row][col];
 
-                        if (gameMap._tiles[row][col].bombs.length > 0) {
-                            const tileInfo = gameMap._tiles[row][col].info;
+                        if (tile.bombs.length > 0) {
                             // The + 8 are added since the image is only 16px
-                            ctx.drawImage(bombImage, tileInfo.coordinates._x + 8, tileInfo.coordinates._y + 8);
+                            ctx.drawImage(bombImage, tile.info.coordinates._x + 8, tile.info.coordinates._y + 8);
+                        }
+
+                        if (tile.isOnFire) {
+                            ctx.drawImage(explosionImage,
+                                tile.info.coordinates._x,
+                                tile.info.coordinates._y,
+                                tile.info.width,
+                                tile.info.height
+                            );
                         }
                     }
                 }
+                resolve();
+            })
+            .catch(error => reject(error));
+        });
+    }
+
+    drawCollectibles(ctx: CanvasRenderingContext2D, state: GameState): Promise<void> {
+        return new Promise((resolve, reject) => {
+            // First, we get all of our images. That way, we can assume that all of our images are in memory.
+            const powerUpPromise = this._gameEngineService.getImage(ImageLocation.powerUp);
+            const bombUpPromise = this._gameEngineService.getImage(ImageLocation.bombUp);
+            const speedUpPromise = this._gameEngineService.getImage(ImageLocation.speedUp);
+
+            const allImagesPromise = Promise.all([powerUpPromise, bombUpPromise, speedUpPromise]);
+
+            // The imagesArray follows the same order as the array used in the Promise.all function.
+            allImagesPromise.then(imagesArray => {
+                const powerUpImage = imagesArray[0];
+                const bombUpImage = imagesArray[1];
+                const speedUpImage = imagesArray[2];
+                let collectibleImage: HTMLImageElement;
+
+                // Drawing all the collectibles.
+                for (const collectible of state.collectibles) {
+                    if (collectible.type === ObjectType.PowerUp) {
+                        collectibleImage = powerUpImage;
+                    }
+                    else if (collectible.type === ObjectType.BombUp) {
+                        collectibleImage = bombUpImage;
+                    }
+                    else if (collectible.type === ObjectType.SpeedUp) {
+                        collectibleImage = speedUpImage;
+                    }
+
+                    ctx.drawImage(collectibleImage, collectible.coordinates._x, collectible.coordinates._y);
+                }
+
                 resolve();
             })
             .catch(error => reject(error));

@@ -3,9 +3,29 @@
   box-sizing: border-box;
 }
 
-
-.main-container {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
+.container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
+
+.errors-container {
+    display: flex;
+    flex-direction: column;
+    max-width: 1000px;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.error {
+    border: solid red 2px;
+    background-color: lightpink;
+    width: 100%;
+    border-radius: 5px;
+    text-align: center;
+}
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }

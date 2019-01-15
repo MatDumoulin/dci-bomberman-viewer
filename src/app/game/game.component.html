@@ -7,12 +7,28 @@
 
     <div>
         <div class="action-container">
-            <button [routerLink]="['/home']">Spectate another game</button>
-            <button *ngIf="!hasJoinedGame" (click)="joinGame()">Join Game</button>
-            <button *ngIf="hasJoinedGame" (click)="leaveGame()">Leave Game</button>
+            <button [routerLink]="['/home']">Select another server</button>
+            <form>
+                <input type="text" name="clientId" placeholder="Enter player name" [(ngModel)]="userId" [disabled]="hasJoinedGame">
+                <button *ngIf="!hasJoinedGame" (click)="joinGame()" [disabled]="!userId">Join Game</button>
+                <button *ngIf="hasJoinedGame" (click)="leaveGame()" [disabled]="hasGameStarted()">Leave Game</button>
+            </form>
         </div>
 
-        <canvas id="bomberman-game" width="480" height="480" tabindex="0" (keydown)="onActionInput($event)" (keyup)="onActionInput($event)"></canvas>
+
+        <div class="game-container">
+            <div class="room-list-container">
+                <bomberman-room-list [client]="client" [idOfSelectedRoom]="roomToView" (roomChange)="updateSelectedRoom($event)"></bomberman-room-list>
+            </div>
+
+            <div>
+                <canvas id="bomberman-game" width="480" height="480" tabindex="0" (keydown)="onActionInput($event)" (keyup)="onActionInput($event)"></canvas>
+
+                <div class="timer" *ngIf="currentGameState">
+                    <p>Game clock: {{getGameTime()}}</p>
+                </div>
+            </div>
+        </div>
     </div>
 
 </div>

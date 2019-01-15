@@ -49,12 +49,13 @@ export class GameEngineService implements OnDestroy {
         imageCol: number,
         imageRow: number,
         displayWidth: number,
-        displayHeight: number
+        displayHeight: number,
+        paddingTopLeft = 0 // To center the sprite.
     ): void {
         ctx.drawImage(
             spritesheet, // The sprite sheet from which we take our image.
-            imageCol * imageWidth, // The x pixel that marks the beggining of our image in the sprite.
-            imageRow * imageHeight, // The y pixel that marks the beggining of our image in the sprite.
+            imageCol * imageWidth + paddingTopLeft, // The x pixel that marks the beggining of our image in the sprite.
+            imageRow * imageHeight + + paddingTopLeft, // The y pixel that marks the beggining of our image in the sprite.
             imageWidth, // The width of our image in the sprite.
             imageHeight, // The height of our image in the sprite.
             positionInGame._x, // Where (x pixel) to draw our image in the game.
@@ -62,5 +63,11 @@ export class GameEngineService implements OnDestroy {
             displayWidth, // The width of our image in the game.
             displayHeight // The height of our image in the game.
         );
+    }
+
+    drawText(text: string, ctx: CanvasRenderingContext2D, color: string, position: Point, align: CanvasTextAlign = "center"): void {
+        ctx.fillStyle = color;
+        ctx.textAlign = align;
+        ctx.fillText(text, position._x, position._y);
     }
 }

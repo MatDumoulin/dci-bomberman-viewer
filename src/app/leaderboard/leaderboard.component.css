@@ -1,0 +1,12 @@
+.leaderboard-container {
+    height: 75vh;
+    width: 90vw;
+    display: flex;
+    flex-direction: column;
+    align-content: center;
+}
+
+.leaderboard-container h1 {
+    text-align: center;
+}
+
