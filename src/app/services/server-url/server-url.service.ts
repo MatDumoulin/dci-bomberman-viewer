@@ -1,5 +1,5 @@
 import { Injectable, OnDestroy } from "@angular/core";
-import { Subject } from "rxjs";
+import { Subject, Subscription } from "rxjs";
 
 @Injectable({
     providedIn: "root"
@@ -13,9 +13,11 @@ export class ServerUrlService implements OnDestroy {
     }
 
     set url(url: string) {
-        console.log(url);
+        console.log("UrlService:", url);
         this._serverUrl = url;
-        this._changeObservable.next(this._serverUrl);
+        setTimeout(() =>
+            this._changeObservable.next(this._serverUrl)
+        );
     }
 
     ngOnDestroy() {
@@ -23,14 +25,14 @@ export class ServerUrlService implements OnDestroy {
     }
 
     getLeaderboardUrl(): string {
-        return this.url + "/leaderboard";
+        return "/" + this.url + "/leaderboard";
     }
 
     getGameUrl(): string {
-        return this.url + "/game";
+        return "/" + this.url + "/game";
     }
 
-    onChange(callback: any): void {
-        this._changeObservable.subscribe(callback);
+    onChange(callback: any): Subscription {
+        return this._changeObservable.subscribe(callback);
     }
 }
