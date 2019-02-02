@@ -1,8 +1,8 @@
 <mat-toolbar color="primary">
     <div class="logo" [routerLink]="['/home']">DCI Bomberman</div>
 
-    <button [routerLink]="[gameUrl]" mat-button>View games</button>
-    <button [routerLink]="[leaderboardUrl]" mat-button>Leaderboard</button>
+    <button routerLink="/game" mat-button>View games</button>
+    <button routerLink="/leaderboard" mat-button>Leaderboard</button>
 
     <!-- This fills the remaining space of the current row -->
     <span class="fill-remaining-space"></span>

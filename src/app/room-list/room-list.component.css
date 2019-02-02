@@ -44,7 +44,11 @@
     background: rgb(33, 77, 160);
 }
 
-.view-count {
+.count-container p:first-child {
+    margin-right: 10px;
+}
+
+.count {
     font-size: 1em;
-    margin-right: 2px;
+    margin-right: 1px;
 }

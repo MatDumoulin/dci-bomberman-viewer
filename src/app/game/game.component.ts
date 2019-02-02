@@ -1,12 +1,27 @@
 import { Component, OnInit, OnDestroy } from "@angular/core";
 import { Client, Room, DataChange } from "colyseus.js";
-import { RoomAvailable } from "colyseus.js/lib/Room";
+import uuid from "uuid/v4";
 
 import { GameMapManagerService } from "./game-map-manager/game-map-manager.service";
-import { GameState, GameStateFromServer, Player, PlayerAction, PlayerId, ClientOptions } from "../models";
+import {
+    GameState,
+    GameStateFromServer,
+    Player,
+    PlayerAction,
+    PlayerId,
+    ClientOptions,
+    GameInfo
+} from "../models";
 import { PlayerManagerService } from "./player-manager/player-manager.service";
-import { Message } from '../comm';
-import { ServerUrlService } from "../services/server-url/server-url.service";
+import { Message } from "../comm";
+import { RoomService } from "../services/room-service/room.service";
+import { Subscription } from "rxjs";
+
+enum ErrorTypes {
+    LOAD_BALANCER = "load-balancer",
+    USER_INPUT = "user",
+    GAME = "game"
+}
 
 @Component({
     selector: "bomberman-game",
@@ -14,30 +29,47 @@ import { ServerUrlService } from "../services/server-url/server-url.service";
     styleUrls: ["./game.component.css"]
 })
 export class GameComponent implements OnInit, OnDestroy {
+    private _currentServerUrl: string;
     private _room: Room;
     private _isViewingGame = false;
     private _previousActions: PlayerAction;
     private _playerId: string;
+    private _viewerId: string = uuid();
+    private _autoJoinFirstGameSubscription: Subscription;
     client: Client;
     userId: string;
     roomToView: string;
     currentGameState: GameState;
-    errors: string[] = [];
+    errors: {reason: string, error: string}[] = [];
     hasJoinedGame = false;
-
 
     constructor(
         private _gameMapManagerService: GameMapManagerService,
         private _playerManagerService: PlayerManagerService,
-        private _serverUrlService: ServerUrlService
+        public roomService: RoomService
     ) {}
 
     ngOnInit(): void {
-        console.log("Server url: ", this._serverUrlService.url);
-        this.client = new Client('ws:' + this._serverUrlService.url);
-        this._room = this.client.join("dci", {isPlaying: false});
-        this._isViewingGame = true;
-        this.onSocketConnectionSetUp();
+        this._autoJoinFirstGameSubscription = this.roomService.rooms.subscribe(
+            rooms => {
+                // Join the first room available, then unsubscribe.
+                if (rooms.length > 0) {
+                    this.updateSelectedRoom(this.roomService.rooms.value[0]);
+                    if (this._autoJoinFirstGameSubscription) {
+                        this._autoJoinFirstGameSubscription.unsubscribe();
+                    }
+                }
+                this.errors = this.errors.filter(error => error.reason !== ErrorTypes.LOAD_BALANCER);
+            }
+        );
+
+        this.roomService.errors.subscribe(roomErrors => {
+            for (const roomError of roomErrors) {
+                if (!this.errors.some(e => e.error === roomError)) {
+                    this.errors.push({reason: ErrorTypes.LOAD_BALANCER, error: roomError});
+                }
+            }
+        });
     }
 
     ngOnDestroy(): void {
@@ -87,16 +119,17 @@ export class GameComponent implements OnInit, OnDestroy {
             }
         });
 
-        this.client.onError.add((roomError) => {
+        this.client.onError.add(roomError => {
             console.log("An error occurred in the room:", roomError);
-            const errorMessage = "Unable to connect to server with url " + this._serverUrlService.url;
+            const errorMessage =
+                "Unable to connect to game with url " +
+                this._currentServerUrl;
 
-            if (this.errors.findIndex(error => error === errorMessage) === -1) {
-                this.errors.push(errorMessage);
+            if (this.errors.findIndex(e => e.error === errorMessage) === -1) {
+                this.errors.push({reason: ErrorTypes.GAME, error: errorMessage});
             }
         });
     }
-
 
     private async draw(gameState: GameState): Promise<void> {
         // First of, we clear the canvas.
@@ -107,7 +140,10 @@ export class GameComponent implements OnInit, OnDestroy {
         // Thus, we got to keep a clear draw order.
         await this._gameMapManagerService.drawMap(ctx, gameState.gameMap);
         await this._gameMapManagerService.drawCollectibles(ctx, gameState);
-        await this._gameMapManagerService.drawBombsAndExplosions(ctx, gameState.gameMap);
+        await this._gameMapManagerService.drawBombsAndExplosions(
+            ctx,
+            gameState.gameMap
+        );
 
         const playerIds = Object.keys(gameState.players);
 
@@ -128,11 +164,12 @@ export class GameComponent implements OnInit, OnDestroy {
         const canvas = this.getCanvas();
         const ctx = this.getCanvasContext();
 
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if (ctx) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
     }
 
     private updateState(gameState: GameStateFromServer) {
-
         // Here we want to update the current game state to match the new state.
         // For some objects, we are storing useful information that we don't want to lose.
         const updatedPlayers = this.updatePlayerState(gameState);
@@ -145,12 +182,16 @@ export class GameComponent implements OnInit, OnDestroy {
         this.draw(this.currentGameState);
     }
 
-    private updatePlayerState(newState: GameStateFromServer): { [playerId: string]: Player } {
+    private updatePlayerState(
+        newState: GameStateFromServer
+    ): { [playerId: string]: Player } {
         const players: { [playerId: string]: Player } = {};
         const playerIds = Object.keys(newState.players);
 
         for (const playerId of playerIds) {
-            const playerFromCurrentState = this.currentGameState.players[playerId];
+            const playerFromCurrentState = this.currentGameState.players[
+                playerId
+            ];
             const playerFromNewState = newState.players[playerId];
 
             if (playerFromCurrentState) {
@@ -201,7 +242,7 @@ export class GameComponent implements OnInit, OnDestroy {
 
         if (!canvas || !canvas.getContext) {
             const errorMessage = "Unable to access the game canvas.";
-            this.errors.push(errorMessage);
+            this.errors.push({reason: ErrorTypes.GAME, error: errorMessage});
             console.error(errorMessage);
             return null;
         }
@@ -216,23 +257,27 @@ export class GameComponent implements OnInit, OnDestroy {
     // To play the game
     joinGame(): void {
         if (!this.userId) {
-            this.errors.push("L'identifiant de l'utilisateur ne peut pas être vide, you hacker.");
+            this.errors.push(
+                {reason: ErrorTypes.USER_INPUT, error: "L'identifiant de l'utilisateur ne peut pas être vide, you hacker."}
+            );
             this.userId = "";
             return;
-        }
-        else if (!this.userId.trim()) {
-            this.errors.push("Don't try to fool me with your whitespaces!");
+        } else if (!this.userId.trim()) {
+            this.errors.push({reason: ErrorTypes.USER_INPUT, error: "Don't try to fool me with your whitespaces!"});
             this.userId = "";
             return;
         }
 
         // First, we need to leave the room since we are automatically registered as a viewer.
-        this._room.leave();
+        this.leaveGame();
         this._isViewingGame = false;
         this._playerId = this.userId;
 
         // Then, we can connect to the game as a player.
-        const clientOptions: ClientOptions = {isPlaying: true, playerId: this._playerId};
+        const clientOptions: ClientOptions = {
+            isPlaying: true,
+            id: this._playerId
+        };
 
         if (this.roomToView) {
             clientOptions.roomToJoin = this.roomToView;
@@ -255,13 +300,11 @@ export class GameComponent implements OnInit, OnDestroy {
 
     onActionInput(event: KeyboardEvent): void {
         if (this.hasJoinedGame) {
-
             let actions: PlayerAction;
 
             if (this._previousActions) {
                 actions = new PlayerAction();
-            }
-            else {
+            } else {
                 actions = Object.assign({}, this._previousActions);
             }
 
@@ -293,7 +336,12 @@ export class GameComponent implements OnInit, OnDestroy {
             this._previousActions = actions;
 
             if (hasChanged) {
-                this._room.send(new Message("PlayerAction", {playerId: this._playerId, actions}));
+                this._room.send(
+                    new Message("PlayerAction", {
+                        playerId: this._playerId,
+                        actions
+                    })
+                );
             }
         }
     }
@@ -303,38 +351,60 @@ export class GameComponent implements OnInit, OnDestroy {
             return null;
         }
         // Minutes:Seconds
-        return `${Math.floor(this.currentGameState.time / 60000)}:${Math.floor(this.currentGameState.time / 1000) % 60}`;
+        return `${Math.floor(this.currentGameState.time / 60000)}:${Math.floor(
+            this.currentGameState.time / 1000
+        ) % 60}`;
     }
 
     private drawWinnerScreen(playerId: PlayerId) {
         const ctx = this.getCanvasContext();
         const canvas = this.getCanvas();
 
-        ctx.globalAlpha = 0.6;
-        ctx.fillStyle = "black";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.globalAlpha = 1.0;
+        if (ctx) {
+            ctx.globalAlpha = 0.6;
+            ctx.fillStyle = "black";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.globalAlpha = 1.0;
 
-        ctx.font = "24px Marker Felt, fantasy";
-        ctx.fillStyle = "white";
-        ctx.textAlign = "center";
-        ctx.fillText(`Player ${playerId} has won!`, canvas.width / 2, 150, canvas.width);
+            ctx.font = "24px Marker Felt, fantasy";
+            ctx.fillStyle = "white";
+            ctx.textAlign = "center";
+            ctx.fillText(
+                `Player ${playerId} has won!`,
+                canvas.width / 2,
+                150,
+                canvas.width
+            );
+        }
     }
 
     hasGameStarted(): boolean {
-        return this.currentGameState.hasStarted;
+        return this.currentGameState && this.currentGameState.hasStarted;
     }
 
-    updateSelectedRoom(newRoomToSelect: RoomAvailable): void {
-        if (newRoomToSelect.roomId !== this.roomToView) {
-            this.roomToView = newRoomToSelect.roomId;
+    updateSelectedRoom(newRoomToSelect: GameInfo): void {
+        if (newRoomToSelect.id !== this.roomToView) {
+            this.roomToView = newRoomToSelect.id;
 
             // Switching up the game that is watched by the user.
             if (this._room) {
                 this.leaveGame();
             }
+            // Changing up the colyseus client if we are watching a game on another server.
+            if (this._currentServerUrl !== newRoomToSelect.serverUrl) {
+                if (this.client && this.client.id) {
+                    this.client.close();
+                }
+                this.client = new Client("ws:" + newRoomToSelect.serverUrl);
+                this._currentServerUrl = newRoomToSelect.serverUrl;
+            }
+
             // Join the game
-            const clientOptions: ClientOptions = {isPlaying: false};
+            this._isViewingGame = true;
+            const clientOptions: ClientOptions = {
+                isPlaying: false,
+                id: this._viewerId
+            };
             if (this.roomToView) {
                 clientOptions.roomToJoin = this.roomToView;
             }

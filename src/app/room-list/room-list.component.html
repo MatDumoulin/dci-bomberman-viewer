@@ -1,13 +1,20 @@
 <div class="room-list">
     <h4 class="room-list-title">All games to view</h4>
     <div *ngIf="rooms.length > 0; else noRooms">
-        <div class="room" [ngClass]="{selected: room.roomId === idOfSelectedRoom}" *ngFor="let room of rooms; trackBy: trackByRoomName" (click)="onRoomClick(room)">
-            <p>{{room.roomId}}</p>
+        <div class="room" [ngClass]="{selected: room.id === idOfSelectedRoom}" *ngFor="let room of rooms; trackBy: trackByRoomName" (click)="onRoomClick(room)">
+            <p>{{room.id}}</p>
 
-            <p>
-                <i class="material-icons view-count">visibility</i>
-                {{room.clients}}
-            </p>
+            <div class="flex-row count-container">
+                <p title="Player count">
+                    <i class="material-icons count">group</i>
+                    {{room.players}}
+                </p>
+
+                <p title="Viewer count">
+                    <i class="material-icons count">visibility</i>
+                    {{room.viewers}}
+                </p>
+            </div>
         </div>
     </div>
 

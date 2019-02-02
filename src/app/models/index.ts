@@ -6,5 +6,6 @@ export * from './game-object';
 export * from './game-state';
 export * from './player';
 export * from './point';
+export * from './server-info';
 export * from './tile';
 export * from './upgrade';

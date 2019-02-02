@@ -9,8 +9,8 @@ import { LeaderboardComponent } from "./leaderboard/leaderboard.component";
 export const routes: Routes = [
     { path: "", redirectTo: "/home", pathMatch: "full" },
     { path: "home", component: HomeComponent },
-    { path: ":serverUrl/game", component: GameComponent},
-    { path: ":serverUrl/leaderboard", component: LeaderboardComponent},
+    { path: "game", component: GameComponent},
+    { path: "leaderboard", component: LeaderboardComponent},
     // { path: "**", component: NotFoundComponent }
 ];
 export const routing: ModuleWithProviders = RouterModule.forRoot(routes);

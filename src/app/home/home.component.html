@@ -5,18 +5,9 @@
 
     <img class="home-image" src="assets/dci-ets-full.png">
 
-    <h2>Please enter the url of the server</h2>
+    <h2>Are ready to view bomberman games?</h2>
 
     <div class="game-url-container">
-
-        <mat-form-field>
-            <mat-label>Server url</mat-label>
-            <input id="url" type="text" placeholder="localhost:8000" [(ngModel)]="serverUrl" #url="ngModel" matInput required>
-            <mat-error *ngIf="url.hasError('required')">
-                Server url is <strong>required</strong>
-            </mat-error>
-        </mat-form-field>
-
-        <button color="primary" (click)="joinServer()" [disabled]="url.invalid" mat-raised-button>Join Server</button>
+        <button color="primary" routerLink="/game" mat-raised-button>L'ÉTS do it!</button>
     </div>
 </div>

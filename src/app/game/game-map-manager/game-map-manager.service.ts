@@ -17,6 +17,11 @@ export class GameMapManagerService {
     // is displayed on the canvas.
     drawMap(ctx: CanvasRenderingContext2D, gameMap: GameMap): Promise<void> {
         return new Promise((resolve, reject) => {
+            if (!ctx) {
+                reject("Context cannot be null");
+                return;
+            }
+
             // First, we get all of our images. That way, we can assume that all of our images are in memory.
             const breakablePromise = this._gameEngineService.getImage(ImageLocation.breakable);
             const walkablePromise = this._gameEngineService.getImage(ImageLocation.walkable);
@@ -56,6 +61,11 @@ export class GameMapManagerService {
 
     drawBombsAndExplosions(ctx: CanvasRenderingContext2D, gameMap: GameMap): Promise<void> {
         return new Promise((resolve, reject) => {
+            if (!ctx) {
+                reject("Context cannot be null");
+                return;
+            }
+
             // First, we get all of our images. That way, we can assume that all of our images are in memory.
             const bombPromise = this._gameEngineService.getImage(ImageLocation.bomb);
             const explosionPromise = this._gameEngineService.getImage(ImageLocation.explosion);
@@ -95,6 +105,11 @@ export class GameMapManagerService {
 
     drawCollectibles(ctx: CanvasRenderingContext2D, state: GameState): Promise<void> {
         return new Promise((resolve, reject) => {
+            if (!ctx) {
+                reject("Context cannot be null");
+                return;
+            }
+
             // First, we get all of our images. That way, we can assume that all of our images are in memory.
             const powerUpPromise = this._gameEngineService.getImage(ImageLocation.powerUp);
             const bombUpPromise = this._gameEngineService.getImage(ImageLocation.bombUp);

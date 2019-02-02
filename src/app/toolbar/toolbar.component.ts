@@ -1,30 +1,22 @@
-import { Component, OnInit, ChangeDetectorRef, OnDestroy, AfterViewInit } from "@angular/core";
-import { ServerUrlService } from "../services/server-url/server-url.service";
-import { Subscription } from "rxjs";
+import { Component, OnInit, OnDestroy } from "@angular/core";
+import { environment } from '../../environments/environment';
 
 @Component({
     selector: "bomberman-toolbar",
     templateUrl: "./toolbar.component.html",
     styleUrls: ["./toolbar.component.css"]
 })
-export class ToolbarComponent implements AfterViewInit, OnDestroy {
-    private _sub: Subscription;
+export class ToolbarComponent implements OnInit, OnDestroy {
     gameUrl: string;
     leaderboardUrl: string;
 
-    constructor(private _serverUrlService: ServerUrlService, private _changeDetector: ChangeDetectorRef) {}
+    constructor() {}
 
-    ngAfterViewInit() {
-        this._sub = this._serverUrlService.onChange(() => {
-            console.log("Toolbar onChange!");
-            this.gameUrl = this._serverUrlService.getGameUrl();
-            this.leaderboardUrl = this._serverUrlService.getLeaderboardUrl();
-            console.log(this.gameUrl);
-            console.log(this.leaderboardUrl);
-        });
+    ngOnInit() {
+        this.gameUrl = environment.loadBalancerUrl + "/game";
+        this.leaderboardUrl = environment.leaderboardServerUrl + "/leaderboard";
     }
 
     ngOnDestroy() {
-        this._sub.unsubscribe();
     }
 }

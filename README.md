@@ -1,8 +1,13 @@
 # BombermanViewer
 
 ## Development server
+Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files. This server will not be discoverable by other computers on your network.
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+## Production server
+Run `npm start` to start the prod server. This server will be bundled by webpack and other computers on your network will be able to join it.
+
+## Before you start
+The url of the load balancer for the game servers is hardcoded in the _src/environments_ folder. You must adjust the **loadBalancerUrl** environment variable to the url of the load balancer that runs on your network. If a prod server is currently running, you must restart it to reflect your changes.
 
 ## Attribution Notice
 Special thanks to:
