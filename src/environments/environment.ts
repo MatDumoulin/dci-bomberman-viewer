@@ -4,7 +4,7 @@
 
 export const environment = {
     production: false,
-    loadBalancerUrl: "192.168.0.103:2999",
+    rootServerUrl: "192.168.0.103:3000",
     leaderboardServerUrl: "192.168.0.103:3500"
 };
 

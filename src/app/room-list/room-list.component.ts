@@ -13,7 +13,7 @@ export class RoomListComponent {
     idOfSelectedRoom: string;
 
     @Input()
-    rooms: GameInfo[] = [];
+    rooms: RoomAvailable[] = [];
 
     @Output()
     roomChange = new EventEmitter<RoomAvailable>();

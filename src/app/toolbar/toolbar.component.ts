@@ -13,7 +13,7 @@ export class ToolbarComponent implements OnInit, OnDestroy {
     constructor() {}
 
     ngOnInit() {
-        this.gameUrl = environment.loadBalancerUrl + "/game";
+        this.gameUrl = environment.rootServerUrl + "/game";
         this.leaderboardUrl = environment.leaderboardServerUrl + "/leaderboard";
     }
 

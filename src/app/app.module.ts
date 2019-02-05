@@ -13,6 +13,7 @@ import { HomeComponent } from './home/home.component';
 import { RoomListComponent } from './room-list/room-list.component';
 import { LeaderboardComponent } from './leaderboard/leaderboard.component';
 import { ToolbarComponent } from './toolbar/toolbar.component';
+import { GameScreenComponent } from './game/game-screen/game-screen.component';
 
 
 @NgModule({
@@ -23,7 +24,8 @@ import { ToolbarComponent } from './toolbar/toolbar.component';
     HomeComponent,
     RoomListComponent,
     LeaderboardComponent,
-    ToolbarComponent
+    ToolbarComponent,
+    GameScreenComponent
   ],
   imports: [
     BrowserModule,

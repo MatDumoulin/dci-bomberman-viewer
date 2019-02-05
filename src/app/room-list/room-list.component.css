@@ -44,10 +44,6 @@
     background: rgb(33, 77, 160);
 }
 
-.count-container p:first-child {
-    margin-right: 10px;
-}
-
 .count {
     font-size: 1em;
     margin-right: 1px;

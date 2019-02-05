@@ -1,7 +1,7 @@
 <div class="container">
     <div class="errors-container">
-        <div class="error" *ngFor="let e of errors">
-            <p>{{e.error}}</p>
+        <div class="error" *ngFor="let error of errors">
+            <p>{{error}}</p>
         </div>
     </div>
 
@@ -21,13 +21,11 @@
             </div>
 
             <div>
-                <canvas id="bomberman-game" width="480" height="480" tabindex="0" (keydown)="onActionInput($event)" (keyup)="onActionInput($event)"></canvas>
-
+                <bomberman-game-screen [state]="currentGameState" (userAction)="onActionInput($event)"></bomberman-game-screen>
                 <div class="timer" *ngIf="currentGameState">
                     <p>Game clock: {{getGameTime()}}</p>
                 </div>
             </div>
         </div>
     </div>
-
 </div>
