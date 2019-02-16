@@ -1,8 +1,8 @@
 import { Component, OnInit, OnDestroy, ViewChild } from "@angular/core";
 import { Room, Client } from "colyseus.js";
 import { BombermanStats, BombermanRoomStats, Stat } from "../models";
-import { ServerUrlService } from "../services/server-url/server-url.service";
 import { BarHorizontalComponent } from "@swimlane/ngx-charts";
+import { environment } from '../../environments/environment';
 
 @Component({
     selector: "bomberman-leaderboard",
@@ -19,12 +19,10 @@ export class LeaderboardComponent implements OnInit, OnDestroy {
     @ViewChild('chart')
     chartComponent: BarHorizontalComponent;
 
-    constructor(private _serverUrlService: ServerUrlService) {}
+    constructor() {}
 
     ngOnInit() {
-        const deconstructedUrl = this._serverUrlService.url.split(":");
-        this._serverUrl = deconstructedUrl[0] + ":3500";
-
+        this._serverUrl = environment.leaderboardServerUrl;
         this.connectClient();
         this._room = this._client.join("leaderboard");
         this.onSocketConnectionSetUp();
@@ -51,7 +49,6 @@ export class LeaderboardComponent implements OnInit, OnDestroy {
 
         // Then, we subscribe to the events that we want.
         this._room.onJoin.add(() => {
-            console.log(this._client.id, "joined", this._room.name);
             this.errors = [];
         });
 

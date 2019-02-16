@@ -1,12 +1,12 @@
 import { TestBed } from '@angular/core/testing';
 
-import { ServerUrlService } from './server-url.service';
+import { RoomService } from './room.service';
 
-describe('ServerUrlService', () => {
+describe('RoomService', () => {
   beforeEach(() => TestBed.configureTestingModule({}));
 
   it('should be created', () => {
-    const service: ServerUrlService = TestBed.get(ServerUrlService);
+    const service: RoomService = TestBed.get(RoomService);
     expect(service).toBeTruthy();
   });
 });

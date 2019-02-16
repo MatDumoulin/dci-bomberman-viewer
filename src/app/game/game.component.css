@@ -1,12 +1,8 @@
-canvas {
-    background-color: black;
-    box-shadow: 1px 1px gray;
-}
-
 .action-container {
     display: flex;
     justify-content: space-between;
     width: 100%;
+    flex-direction: row-reverse;
 }
 
 .game-container {

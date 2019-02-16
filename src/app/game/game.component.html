@@ -7,7 +7,6 @@
 
     <div>
         <div class="action-container">
-            <button [routerLink]="['/home']">Select another server</button>
             <form>
                 <input type="text" name="clientId" placeholder="Enter player name" [(ngModel)]="userId" [disabled]="hasJoinedGame">
                 <button *ngIf="!hasJoinedGame" (click)="joinGame()" [disabled]="!userId">Join Game</button>
@@ -18,17 +17,15 @@
 
         <div class="game-container">
             <div class="room-list-container">
-                <bomberman-room-list [client]="client" [idOfSelectedRoom]="roomToView" (roomChange)="updateSelectedRoom($event)"></bomberman-room-list>
+                <bomberman-room-list [rooms]="roomService.rooms | async" [idOfSelectedRoom]="roomToView" (roomChange)="updateSelectedRoom($event)"></bomberman-room-list>
             </div>
 
             <div>
-                <canvas id="bomberman-game" width="480" height="480" tabindex="0" (keydown)="onActionInput($event)" (keyup)="onActionInput($event)"></canvas>
-
+                <bomberman-game-screen [state]="currentGameState" (userAction)="onActionInput($event)"></bomberman-game-screen>
                 <div class="timer" *ngIf="currentGameState">
                     <p>Game clock: {{getGameTime()}}</p>
                 </div>
             </div>
         </div>
     </div>
-
 </div>

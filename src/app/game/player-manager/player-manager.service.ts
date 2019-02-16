@@ -13,6 +13,11 @@ export class PlayerManagerService {
 
     drawPlayer(ctx: CanvasRenderingContext2D, player: Player): Promise<void> {
         return new Promise((resolve, reject) => {
+            if (!ctx) {
+                reject("Context cannot be null");
+                return;
+            }
+
             this._gameEngineService
                 .getImage(ImageLocation.player)
                 .then(playerSpritesheet => {

@@ -3,7 +3,9 @@
 // The list of file replacements can be found in `angular.json`.
 
 export const environment = {
-  production: false
+    production: false,
+    rootServerUrl: "192.168.0.103:3000",
+    leaderboardServerUrl: "192.168.0.103:3500"
 };
 
 /*

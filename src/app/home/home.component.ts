@@ -12,10 +12,4 @@ export class HomeComponent {
     constructor(private _router: Router) {
 
     }
-
-    joinServer(): void {
-      const url = `/${this.serverUrl}/game`;
-
-      this._router.navigateByUrl(url);
-    }
 }
