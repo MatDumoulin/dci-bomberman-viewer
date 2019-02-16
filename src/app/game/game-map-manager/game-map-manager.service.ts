@@ -41,14 +41,19 @@ export class GameMapManagerService {
                         if (gameMap._tiles[row][col] !== OUT_OF_BOUND) {
                             const tileInfo = gameMap._tiles[row][col].info;
 
+                            const coordinatesInPixel = {
+                                x: tileInfo.coordinates._x * tileInfo.width,
+                                y: tileInfo.coordinates._y * tileInfo.height
+                            };
+
                             if (tileInfo.type === ObjectType.Walkable) {
-                                ctx.drawImage(walkableImage, tileInfo.coordinates._x, tileInfo.coordinates._y);
+                                ctx.drawImage(walkableImage, coordinatesInPixel.x, coordinatesInPixel.y);
                             }
                             else if (tileInfo.type === ObjectType.BreakableItem) {
-                                ctx.drawImage(breakableImage, tileInfo.coordinates._x, tileInfo.coordinates._y);
+                                ctx.drawImage(breakableImage, coordinatesInPixel.x, coordinatesInPixel.y);
                             }
                             else if (tileInfo.type === ObjectType.Wall) {
-                                ctx.drawImage(wallImage, tileInfo.coordinates._x, tileInfo.coordinates._y);
+                                ctx.drawImage(wallImage, coordinatesInPixel.x, coordinatesInPixel.y);
                             }
                         }
                     }
@@ -82,15 +87,20 @@ export class GameMapManagerService {
                     for (let col = 0; col < gameMap._tiles[row].length; ++col) {
                         const tile = gameMap._tiles[row][col];
 
+                        const coordinatesInPixel = {
+                            x: tile.info.coordinates._x * tile.info.width,
+                            y: tile.info.coordinates._y * tile.info.height
+                        };
+
                         if (tile.bombs.length > 0) {
                             // The + 8 are added since the image is only 16px
-                            ctx.drawImage(bombImage, tile.info.coordinates._x + 8, tile.info.coordinates._y + 8);
+                            ctx.drawImage(bombImage, coordinatesInPixel.x + 8, coordinatesInPixel.y + 8);
                         }
 
                         if (tile.isOnFire) {
                             ctx.drawImage(explosionImage,
-                                tile.info.coordinates._x,
-                                tile.info.coordinates._y,
+                                coordinatesInPixel.x,
+                                coordinatesInPixel.y,
                                 tile.info.width,
                                 tile.info.height
                             );
@@ -136,7 +146,11 @@ export class GameMapManagerService {
                         collectibleImage = speedUpImage;
                     }
 
-                    ctx.drawImage(collectibleImage, collectible.coordinates._x, collectible.coordinates._y);
+                    ctx.drawImage(
+                        collectibleImage,
+                        collectible.coordinates._x * collectible.width,
+                        collectible.coordinates._y * collectible.height
+                    );
                 }
 
                 resolve();

@@ -2,7 +2,7 @@ import { Injectable } from "@angular/core";
 import { Player, Direction } from "../../models/player";
 import { GameEngineService } from "../game-engine/game-engine.service";
 import { ImageLocation } from "../../models/game-object";
-import { Point } from "src/app/models/point";
+import { Point, GameMap } from "src/app/models";
 
 @Injectable({
     providedIn: "root"
@@ -11,7 +11,7 @@ export class PlayerManagerService {
 
     constructor(private _gameEngineService: GameEngineService) {}
 
-    drawPlayer(ctx: CanvasRenderingContext2D, player: Player): Promise<void> {
+    drawPlayer(ctx: CanvasRenderingContext2D, player: Player, gameMap: GameMap): Promise<void> {
         return new Promise((resolve, reject) => {
             if (!ctx) {
                 reject("Context cannot be null");
@@ -51,10 +51,17 @@ export class PlayerManagerService {
                     }
 
                     // Drawing the player's sprite
+                    const tileWidth = gameMap._tiles[0][0].info.width;
+                    const tileHeight = gameMap._tiles[0][0].info.height;
+                    const coordsInPixels: Point = {
+                        _x: player.coordinates._x * tileWidth + (tileWidth - player.width) / 2,
+                        _y: player.coordinates._y * tileHeight + (tileHeight - player.height) / 2
+                    };
+
                     this._gameEngineService.drawSprite(
                         ctx,
                         playerSpritesheet,
-                        player.coordinates,
+                        coordsInPixels,
                         32,
                         32,
                         spritePosition.col,
@@ -66,8 +73,8 @@ export class PlayerManagerService {
 
                     // And his name.
                     const playerNamePosition: Point = {
-                        _x: player.coordinates._x + player.width / 2,
-                        _y: player.coordinates._y,
+                        _x: coordsInPixels._x + player.width / 2,
+                        _y: coordsInPixels._y,
                     };
 
                     this._gameEngineService.drawText(

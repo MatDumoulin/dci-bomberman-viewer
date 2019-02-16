@@ -1,6 +1,13 @@
 import { GameObject, ObjectType } from "./game-object";
 import { Bomb } from "./bomb";
 
+export enum Direction {
+    Up,
+    Down,
+    Left,
+    Right
+}
+
 export type PlayerId = string;
 
 export class Player extends GameObject {
@@ -101,11 +108,4 @@ export class PlayerAction {
     move_left = false;
     move_right = false;
     plant_bomb = false;
-}
-
-export enum Direction {
-    Up,
-    Down,
-    Left,
-    Right
 }

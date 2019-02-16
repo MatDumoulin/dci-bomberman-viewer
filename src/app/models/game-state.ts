@@ -11,6 +11,7 @@ export interface GameState {
     isOver: boolean;
     hasStarted: boolean;
     time: number;
+    maxTime: number;
     winner: PlayerId;
 }
 
@@ -23,5 +24,6 @@ export interface GameStateFromServer {
     isOver: boolean;
     hasStarted: boolean;
     time: number;
+    maxTime: number;
     winner: PlayerId;
 }

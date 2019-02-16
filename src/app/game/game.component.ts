@@ -268,10 +268,8 @@ export class GameComponent implements OnInit, OnDestroy {
         if (!this.currentGameState) {
             return null;
         }
-        // Minutes:Seconds
-        return `${Math.floor(this.currentGameState.time / 60000)}:${Math.floor(
-            this.currentGameState.time / 1000
-        ) % 60}`;
+
+        return this.currentGameState.maxTime - this.currentGameState.time;
     }
 
     hasGameStarted(): boolean {
