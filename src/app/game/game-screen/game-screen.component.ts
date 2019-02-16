@@ -50,13 +50,20 @@ export class GameScreenComponent implements OnInit {
             const player = state.players[playerIds[i]];
 
             if (player.isAlive) {
-                await this._playerManagerService.drawPlayer(ctx, player);
+                await this._playerManagerService.drawPlayer(ctx, player, state.gameMap);
             }
         }
 
-        if (state.winner) {
-            this.drawWinnerScreen(state.winner);
+        if(state.isOver) {
+            if (state.winner) {
+                this.drawWinnerScreen(state.winner);
+            }
+            else {
+                this.drawNoWinnerScreen();
+            }
+
         }
+
     }
 
 
@@ -101,6 +108,35 @@ export class GameScreenComponent implements OnInit {
                 `Player ${playerId} has won!`,
                 canvas.width / 2,
                 150,
+                canvas.width
+            );
+        }
+    }
+
+    private drawNoWinnerScreen() {
+        const ctx = this.getCanvasContext();
+        const canvas = this.getCanvas();
+
+        if (ctx) {
+            ctx.globalAlpha = 0.6;
+            ctx.fillStyle = "black";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.globalAlpha = 1.0;
+
+            ctx.font = "24px Marker Felt, fantasy";
+            ctx.fillStyle = "white";
+            ctx.textAlign = "center";
+            ctx.fillText(
+                `It's a draw, scrub :)`,
+                canvas.width / 2,
+                150,
+                canvas.width
+            );
+
+            ctx.fillText(
+                `Seriously, try killing others next time...`,
+                canvas.width / 2,
+                200,
                 canvas.width
             );
         }

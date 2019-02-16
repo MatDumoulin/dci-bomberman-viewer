@@ -23,7 +23,7 @@
             <div>
                 <bomberman-game-screen [state]="currentGameState" (userAction)="onActionInput($event)"></bomberman-game-screen>
                 <div class="timer" *ngIf="currentGameState">
-                    <p>Game clock: {{getGameTime()}}</p>
+                    <bomberman-clock [timeInMiliseconds]="getGameTime()"></bomberman-clock>
                 </div>
             </div>
         </div>
