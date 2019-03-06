@@ -3,10 +3,9 @@
     width: 90vw;
     display: flex;
     flex-direction: column;
-    align-content: center;
+    align-items: center;
 }
 
 .leaderboard-container h1 {
     text-align: center;
 }
-

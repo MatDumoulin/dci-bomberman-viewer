@@ -53,9 +53,9 @@ export class PlayerManagerService {
                     // Drawing the player's sprite
                     const tileWidth = gameMap._tiles[0][0].info.width;
                     const tileHeight = gameMap._tiles[0][0].info.height;
-                    const coordsInPixels: Point = {
-                        _x: player.coordinates._x * tileWidth + (tileWidth - player.width) / 2,
-                        _y: player.coordinates._y * tileHeight + (tileHeight - player.height) / 2
+                    const coordsInPixels = {
+                        x: player.coordinates.col * tileWidth + (tileWidth - player.width) / 2,
+                        y: player.coordinates.row * tileHeight + (tileHeight - player.height) / 2
                     };
 
                     this._gameEngineService.drawSprite(
@@ -72,9 +72,9 @@ export class PlayerManagerService {
                     );
 
                     // And his name.
-                    const playerNamePosition: Point = {
-                        _x: coordsInPixels._x + player.width / 2,
-                        _y: coordsInPixels._y,
+                    const playerNamePosition = {
+                        x: coordsInPixels.x + player.width / 2,
+                        y: coordsInPixels.y,
                     };
 
                     this._gameEngineService.drawText(
