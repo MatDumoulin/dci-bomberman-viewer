@@ -42,8 +42,8 @@ export class GameMapManagerService {
                             const tileInfo = gameMap._tiles[row][col].info;
 
                             const coordinatesInPixel = {
-                                x: tileInfo.coordinates._x * tileInfo.width,
-                                y: tileInfo.coordinates._y * tileInfo.height
+                                x: tileInfo.coordinates.col * tileInfo.width,
+                                y: tileInfo.coordinates.row * tileInfo.height
                             };
 
                             if (tileInfo.type === ObjectType.Walkable) {
@@ -88,8 +88,8 @@ export class GameMapManagerService {
                         const tile = gameMap._tiles[row][col];
 
                         const coordinatesInPixel = {
-                            x: tile.info.coordinates._x * tile.info.width,
-                            y: tile.info.coordinates._y * tile.info.height
+                            x: tile.info.coordinates.col * tile.info.width,
+                            y: tile.info.coordinates.row * tile.info.height
                         };
 
                         if (tile.bombs.length > 0) {
@@ -148,8 +148,8 @@ export class GameMapManagerService {
 
                     ctx.drawImage(
                         collectibleImage,
-                        collectible.coordinates._x * collectible.width,
-                        collectible.coordinates._y * collectible.height
+                        collectible.coordinates.col * collectible.width,
+                        collectible.coordinates.row * collectible.height
                     );
                 }
 

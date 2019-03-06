@@ -7,7 +7,8 @@
 
     <div class="leaderboard-container">
         <h1>Leaderboard</h1>
-        <ngx-charts-bar-horizontal class="leaderboard"
+        <ngx-charts-bar-horizontal
+            *ngIf="stats.winner && stats.winner.length > 0"
             [results]="stats.winner"
             [xAxis]="true"
             [yAxis]="true"
@@ -17,5 +18,7 @@
             [showYAxisLabel]="true"
             #chart
         ></ngx-charts-bar-horizontal>
+
+        <p *ngIf="stats.winner && stats.winner.length <= 0">No winner yet</p>
     </div>
 </div>

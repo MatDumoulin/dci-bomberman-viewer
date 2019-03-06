@@ -1,5 +1,4 @@
 import { Injectable, OnDestroy } from "@angular/core";
-import { Point } from "../../models/point";
 
 @Injectable({
     providedIn: "root"
@@ -43,7 +42,7 @@ export class GameEngineService implements OnDestroy {
     drawSprite(
         ctx: CanvasRenderingContext2D,
         spritesheet: HTMLImageElement,
-        positionInGame: Point,
+        positionInGame: {x: number, y: number},
         imageWidth: number,
         imageHeight: number,
         imageCol: number,
@@ -59,8 +58,8 @@ export class GameEngineService implements OnDestroy {
                 imageRow * imageHeight + +paddingTopLeft, // The y pixel that marks the beggining of our image in the sprite.
                 imageWidth, // The width of our image in the sprite.
                 imageHeight, // The height of our image in the sprite.
-                positionInGame._x, // Where (x pixel) to draw our image in the game.
-                positionInGame._y, // Where (y pixel) to draw our image in the game.
+                positionInGame.x, // Where (x pixel) to draw our image in the game.
+                positionInGame.y, // Where (y pixel) to draw our image in the game.
                 displayWidth, // The width of our image in the game.
                 displayHeight // The height of our image in the game.
             );
@@ -71,13 +70,13 @@ export class GameEngineService implements OnDestroy {
         text: string,
         ctx: CanvasRenderingContext2D,
         color: string,
-        position: Point,
+        position: {x: number, y: number},
         align: CanvasTextAlign = "center"
     ): void {
         if (ctx) {
             ctx.fillStyle = color;
             ctx.textAlign = align;
-            ctx.fillText(text, position._x, position._y);
+            ctx.fillText(text, position.x, position.y);
         }
     }
 }
